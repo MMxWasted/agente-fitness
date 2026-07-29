@@ -40,9 +40,10 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
   - [x] Crear CHANGELOG.md.
   - [x] Documentar la visión y el alcance detallados.
   - [x] Documentar historias de usuario.
-  - [ ] Documentar la arquitectura general.
-  - [ ] Documentar el modelo de datos detallado.
-  - [ ] Documentar seguridad y privacidad.
+  - [x] Documentar la arquitectura general.
+  - [x] Documentar el modelo de datos detallado.
+  - [x] Documentar seguridad y privacidad.
+  - [x] Documentar los guardrails del agente.
   - [ ] Documentar los ADR iniciales.
 
 ## Fase 2. Fundación técnica

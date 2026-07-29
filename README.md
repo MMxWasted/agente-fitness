@@ -29,6 +29,16 @@ Construir una base sólida para un producto de seguimiento fitness, analítica d
 - [Alcance del producto](docs/product/scope.md)
 - [Historias de usuario](docs/product/user-stories.md)
 
+### Arquitectura y seguridad
+
+- [Arquitectura general](docs/architecture/overview.md)
+- [Modelo de datos conceptual](docs/architecture/data-model.md)
+- [Diseño conceptual de la API](docs/architecture/api-design.md)
+- [Diseño del Agente Fitness](docs/architecture/agent-design.md)
+- [Seguridad fitness](docs/safety/fitness-safety.md)
+- [Privacidad](docs/safety/privacy.md)
+- [Guardrails del agente](docs/safety/agent-guardrails.md)
+
 ### Colaboración y desarrollo
 
 - [Contributing](CONTRIBUTING.md)
