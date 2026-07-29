@@ -6,7 +6,34 @@ artificial.
 
 ## Estado actual
 
-El proyecto se encuentra actualmente en una fase de planificación y documentación previa a la implementación. No existe aún una aplicación ejecutable ni una infraestructura técnica operativa.
+La Fase 1 de documentación fundacional está finalizada. La Fase 2 se encuentra
+en progreso y ya dispone de una fundación técnica mínima: frontend React con
+TypeScript, backend FastAPI, endpoint `GET /health` y una página inicial que
+comprueba el estado de la API.
+
+PostgreSQL, Docker Compose, Alembic, integración continua y el resto de la
+infraestructura de la Fase 2 siguen pendientes.
+
+## Inicio rápido
+
+```powershell
+Set-Location backend
+uv sync
+uv run uvicorn app.main:app --reload
+```
+
+En otra terminal:
+
+```powershell
+Set-Location frontend
+npm.cmd install
+Copy-Item .env.example .env
+npm.cmd run dev
+```
+
+Consulta la [configuración completa](docs/development/setup.md) y los
+[comandos de pruebas](docs/development/testing.md) antes de trabajar en el
+entorno.
 
 ## Objetivo general
 
@@ -47,9 +74,13 @@ Construir una base sólida para un producto de seguimiento fitness, analítica d
 
 - [Contributing](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
+- [Configuración del entorno](docs/development/setup.md)
+- [Pruebas y verificaciones](docs/development/testing.md)
 - [Workflow de Git y colaboración](docs/development/git-workflow.md)
 - [Definición de done](docs/development/definition-of-done.md)
 
 ## Aviso importante
 
-Todavía no existe una aplicación ejecutable ni un entorno técnico completo de frontend, backend, base de datos o despliegue. Esta documentación sirve como base para la siguiente fase de desarrollo.
+La aplicación disponible es únicamente una fundación técnica sin funcionalidad
+fitness, autenticación, persistencia ni agente de inteligencia artificial. No
+existe todavía un entorno completo de base de datos, contenedores o despliegue.

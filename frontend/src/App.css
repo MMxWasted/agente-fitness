@@ -1,0 +1,98 @@
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
+  width: min(100%, 46rem);
+  margin: 0 auto;
+  padding: 3rem 1.25rem;
+  box-sizing: border-box;
+}
+
+.hero {
+  margin-bottom: 2rem;
+}
+
+.phase-label {
+  margin: 0 0 0.75rem;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero__summary {
+  max-width: 38rem;
+  color: var(--text-muted);
+  font-size: clamp(1rem, 3vw, 1.18rem);
+  line-height: 1.65;
+}
+
+.status-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: start;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 1rem 3rem rgba(15, 23, 42, 0.08);
+}
+
+.status-card__indicator {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: var(--status-checking);
+  box-shadow: 0 0 0 0.3rem var(--status-checking-soft);
+}
+
+.status-card--available .status-card__indicator {
+  background: var(--status-available);
+  box-shadow: 0 0 0 0.3rem var(--status-available-soft);
+}
+
+.status-card--unavailable .status-card__indicator {
+  background: var(--status-unavailable);
+  box-shadow: 0 0 0 0.3rem var(--status-unavailable-soft);
+}
+
+.status-card__eyebrow {
+  margin: 0 0 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-card__title {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.12rem;
+}
+
+.status-card__description {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.scope-note {
+  margin: 1.25rem 0 0;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+}
+
+@media (min-width: 48rem) {
+  .page-shell {
+    padding-inline: 2rem;
+  }
+
+  .status-card {
+    padding: 1.5rem;
+  }
+}
