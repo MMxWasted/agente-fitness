@@ -24,7 +24,7 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
 
 ## Fase 1. Documentación fundacional
 
-- Estado: [~] En progreso
+- Estado: [x] Finalizado
 - Objetivo: dejar una base documental clara, coherente y reutilizable.
 - Entregables: documentos de principios, roadmap, glosario, convenciones, workflow de Codex y la documentación adicional prevista en el plan maestro.
 - Dependencias: fase 0.
@@ -36,14 +36,15 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
   - [x] Crear las convenciones de trabajo.
   - [x] Crear el workflow de Codex.
   - [x] Actualizar la portada del repositorio con enlaces a la documentación relevante.
-  - [ ] Crear CONTRIBUTING.md.
-  - [ ] Crear CHANGELOG.md.
-  - [ ] Documentar la visión y el alcance detallados.
-  - [ ] Documentar historias de usuario.
-  - [ ] Documentar la arquitectura general.
-  - [ ] Documentar el modelo de datos detallado.
-  - [ ] Documentar seguridad y privacidad.
-  - [ ] Documentar los ADR iniciales.
+  - [x] Crear CONTRIBUTING.md.
+  - [x] Crear CHANGELOG.md.
+  - [x] Documentar la visión y el alcance detallados.
+  - [x] Documentar historias de usuario.
+  - [x] Documentar la arquitectura general.
+  - [x] Documentar el modelo de datos detallado.
+  - [x] Documentar seguridad y privacidad.
+  - [x] Documentar los guardrails del agente.
+  - [x] Documentar los ADR iniciales.
 
 ## Fase 2. Fundación técnica
 
