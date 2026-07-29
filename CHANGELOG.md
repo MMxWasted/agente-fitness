@@ -17,3 +17,6 @@
 - Documentación de seguridad de fitness, nutrición y salud.
 - Documentación de privacidad y tratamiento de datos.
 - Guardrails conceptuales del Agente Fitness.
+- Índice de decisiones arquitectónicas del proyecto.
+- ADR iniciales aceptados para las direcciones arquitectónicas ya adoptadas.
+- ADR iniciales propuestos para las decisiones que requieren evaluación adicional.

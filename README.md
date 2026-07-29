@@ -39,6 +39,10 @@ Construir una base sólida para un producto de seguimiento fitness, analítica d
 - [Privacidad](docs/safety/privacy.md)
 - [Guardrails del agente](docs/safety/agent-guardrails.md)
 
+### Decisiones arquitectónicas
+
+- [Índice de ADR](docs/decisions/README.md)
+
 ### Colaboración y desarrollo
 
 - [Contributing](CONTRIBUTING.md)
