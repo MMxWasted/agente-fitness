@@ -1,5 +1,15 @@
 # Plan maestro del proyecto Agente Fitness
 
+## Documentación complementaria
+
+Este documento conserva la visión general y el alcance del proyecto. La documentación operativa y de detalle se encuentra distribuida en:
+
+* [Principios](PRINCIPIOS.md)
+* [Roadmap](ROADMAP.md)
+* [Glosario](GLOSARIO.md)
+* [Convenciones](CONVENCIONES.md)
+* [Workflow de Codex](CODEX_WORKFLOW.md)
+
 ## 1. Visión del producto
 
 Agente Fitness será una aplicación web orientada al registro, seguimiento y análisis de la actividad física del usuario.
