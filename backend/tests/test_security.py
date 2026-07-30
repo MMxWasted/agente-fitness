@@ -11,8 +11,11 @@ from app.core.security import (
     InvalidAccessTokenError,
     create_access_token,
     decode_access_token,
+    generate_refresh_token,
     hash_password,
+    hash_refresh_token,
     verify_password,
+    verify_refresh_token,
 )
 
 
@@ -31,6 +34,19 @@ def test_password_is_hashed_and_can_be_verified() -> None:
     assert password.get_secret_value() not in stored_hash
     assert verify_password(password, stored_hash)
     assert not verify_password(wrong_password, stored_hash)
+
+
+def test_refresh_token_is_random_hashed_and_compared_safely() -> None:
+    refresh_token = generate_refresh_token()
+    another_token = generate_refresh_token()
+    stored_hash = hash_refresh_token(refresh_token)
+
+    assert refresh_token != another_token
+    assert len(refresh_token) >= 64
+    assert len(stored_hash) == 64
+    assert refresh_token not in stored_hash
+    assert verify_refresh_token(refresh_token, stored_hash)
+    assert not verify_refresh_token(another_token, stored_hash)
 
 
 def test_access_token_round_trip_uses_the_user_id_as_subject() -> None:

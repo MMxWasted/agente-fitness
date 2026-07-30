@@ -38,10 +38,15 @@ protegida resuelve de nuevo el usuario en PostgreSQL y rechaza identidades
 inexistentes o inactivas. Nunca se acepta un `user_id` proporcionado libremente
 por el cliente para establecer la identidad.
 
-Esta decisión no define todavía refresh tokens, revocación, cierre de sesión
-servidor, cookies, almacenamiento en navegador, recuperación de cuenta,
-verificación de correo, MFA ni proveedores externos. Hasta que se diseñe el
-cliente de autenticación, el frontend no almacena tokens.
+El alcance original de esta decisión no definía refresh tokens, revocación,
+cierre de sesión servidor, cookies ni almacenamiento en navegador. Tampoco
+define recuperación de cuenta, verificación de correo, MFA ni proveedores
+externos.
+
+La gestión de sesión web renovable del bloque 3A.2 se formaliza de forma
+compatible en [ADR-013](ADR-013-session-management.md). ADR-005 continúa
+definiendo la identidad, la contraseña y el access token bearer; ADR-013 añade
+la sesión servidor, el refresh token y los controles del navegador.
 
 ## Alternativas consideradas
 
@@ -107,3 +112,4 @@ incompatible debe registrarse mediante un nuevo ADR que sustituya este.
 - [Modelo de datos](../architecture/data-model.md)
 - [Privacidad](../safety/privacy.md)
 - [ADR-012 — Estrategia de despliegue](ADR-012-deployment-strategy.md)
+- [ADR-013 — Gestión de sesión web renovable](ADR-013-session-management.md)

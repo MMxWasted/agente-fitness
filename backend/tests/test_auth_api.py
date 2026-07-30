@@ -18,6 +18,7 @@ from app.db.session import get_db_session
 from app.main import app
 from app.models.user import User
 from app.services.auth import EmailAlreadyRegisteredError
+from app.services.session import InvalidSessionError, SessionCredentials
 
 client = TestClient(app)
 
@@ -46,8 +47,10 @@ def build_session_override(
 @pytest.fixture(autouse=True)
 def clear_dependency_overrides() -> Generator[None]:
     app.dependency_overrides.clear()
+    client.cookies.clear()
     yield
     app.dependency_overrides.clear()
+    client.cookies.clear()
 
 
 def test_register_returns_public_user_without_password_hash(
@@ -164,8 +167,15 @@ def test_token_endpoint_returns_a_bearer_token(
 
     assert response.status_code == 200
     assert response.json()["token_type"] == "bearer"
+    assert response.json()["expires_in"] == 1800
     assert isinstance(response.json()["access_token"], str)
     assert "password_hash" not in response.text
+    assert "refresh_token" not in response.text
+    cookie_header = response.headers["set-cookie"]
+    assert "agente_fitness_refresh=" in cookie_header
+    assert "HttpOnly" in cookie_header
+    assert "SameSite=lax" in cookie_header
+    assert "Path=/api/v1/auth" in cookie_header
 
 
 def test_token_endpoint_uses_one_generic_authentication_error(
@@ -201,6 +211,180 @@ def test_token_endpoint_uses_one_generic_authentication_error(
         == {"detail": "Incorrect email or password"}
     )
     assert first_response.headers["www-authenticate"] == "Bearer"
+
+
+def test_login_rejects_an_untrusted_browser_origin() -> None:
+    response = client.post(
+        "/api/v1/auth/token",
+        headers={"Origin": "https://attacker.example"},
+        data={
+            "username": "person@example.com",
+            "password": token_urlsafe(32),
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Request origin is not allowed"}
+
+
+def test_refresh_rotates_cookie_and_returns_only_access_token(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = Mock(spec=Session)
+    app.dependency_overrides[get_db_session] = build_session_override(session)
+    expires_at = datetime.now(UTC) + timedelta(days=7)
+    client.cookies.set(
+        "agente_fitness_refresh",
+        "current-refresh-token",
+        domain="testserver.local",
+        path="/api/v1/auth",
+    )
+    monkeypatch.setattr(
+        auth_routes,
+        "rotate_user_session",
+        lambda _session, refresh_token, settings: SessionCredentials(
+            access_token="new-access-token",
+            refresh_token="rotated-refresh-token",
+            refresh_expires_at=expires_at,
+        ),
+    )
+
+    response = client.post(
+        "/api/v1/auth/refresh",
+        headers={"Origin": "http://localhost:5173"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "access_token": "new-access-token",
+        "token_type": "bearer",
+        "expires_in": 1800,
+    }
+    assert "rotated-refresh-token" not in response.text
+    cookie_header = response.headers["set-cookie"]
+    assert "agente_fitness_refresh=" in cookie_header
+    assert "HttpOnly" in cookie_header
+
+
+def test_refresh_uses_one_generic_error_for_missing_or_invalid_cookie(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = Mock(spec=Session)
+    app.dependency_overrides[get_db_session] = build_session_override(session)
+
+    missing_response = client.post(
+        "/api/v1/auth/refresh",
+        headers={"Origin": "http://localhost:5173"},
+    )
+
+    client.cookies.set(
+        "agente_fitness_refresh",
+        "invalid-refresh-token",
+        path="/api/v1/auth",
+    )
+
+    def invalid_session(
+        _session: Session,
+        _refresh_token: str,
+        *,
+        settings: Settings,
+    ) -> SessionCredentials:
+        raise InvalidSessionError
+
+    monkeypatch.setattr(
+        auth_routes,
+        "rotate_user_session",
+        invalid_session,
+    )
+    invalid_response = client.post(
+        "/api/v1/auth/refresh",
+        headers={"Origin": "http://localhost:5173"},
+    )
+
+    assert missing_response.status_code == invalid_response.status_code == 401
+    assert (
+        missing_response.json()
+        == invalid_response.json()
+        == {"detail": "Could not refresh session"}
+    )
+    assert missing_response.headers["www-authenticate"] == "Bearer"
+
+
+@pytest.mark.parametrize("origin", [None, "https://attacker.example"])
+def test_cookie_authenticated_endpoints_require_a_trusted_origin(
+    origin: str | None,
+) -> None:
+    headers = {} if origin is None else {"Origin": origin}
+
+    refresh_response = client.post("/api/v1/auth/refresh", headers=headers)
+    logout_response = client.post("/api/v1/auth/logout", headers=headers)
+
+    assert refresh_response.status_code == logout_response.status_code == 403
+    assert (
+        refresh_response.json()
+        == logout_response.json()
+        == {"detail": "Request origin is not allowed"}
+    )
+
+
+def test_logout_is_idempotent_revokes_and_clears_cookie(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = Mock(spec=Session)
+    app.dependency_overrides[get_db_session] = build_session_override(session)
+    revoked_tokens: list[str | None] = []
+    monkeypatch.setattr(
+        auth_routes,
+        "revoke_user_session",
+        lambda _session, refresh_token: revoked_tokens.append(refresh_token),
+    )
+    client.cookies.set(
+        "agente_fitness_refresh",
+        "current-refresh-token",
+        domain="testserver.local",
+        path="/api/v1/auth",
+    )
+
+    first_response = client.post(
+        "/api/v1/auth/logout",
+        headers={"Origin": "http://localhost:5173"},
+    )
+    second_response = client.post(
+        "/api/v1/auth/logout",
+        headers={"Origin": "http://localhost:5173"},
+    )
+
+    assert first_response.status_code == second_response.status_code == 204
+    assert first_response.content == second_response.content == b""
+    assert revoked_tokens == ["current-refresh-token", None]
+    assert "Max-Age=0" in first_response.headers["set-cookie"]
+    assert "HttpOnly" in first_response.headers["set-cookie"]
+
+
+def test_cors_allows_credentials_only_for_an_explicit_origin() -> None:
+    response = client.options(
+        "/api/v1/auth/refresh",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == ("http://localhost:5173")
+    assert response.headers["access-control-allow-credentials"] == "true"
+
+
+def test_openapi_documents_session_contracts() -> None:
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+    paths = response.json()["paths"]
+    assert "200" in paths["/api/v1/auth/token"]["post"]["responses"]
+    assert "200" in paths["/api/v1/auth/refresh"]["post"]["responses"]
+    assert "401" in paths["/api/v1/auth/refresh"]["post"]["responses"]
+    assert "403" in paths["/api/v1/auth/refresh"]["post"]["responses"]
+    assert "204" in paths["/api/v1/auth/logout"]["post"]["responses"]
 
 
 def test_current_user_returns_public_identity() -> None:

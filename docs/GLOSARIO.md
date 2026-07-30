@@ -137,9 +137,28 @@ Un cálculo determinista es un proceso de transformación de datos que produce u
 ## Access token
 
 Un access token es una credencial temporal presentada como bearer para
-identificar una petición autenticada. En la fase actual es un JWT firmado,
-contiene el UUID del usuario como sujeto y tiene caducidad; no equivale a una
-sesión renovable.
+identificar una petición autenticada. Es un JWT firmado, contiene el UUID del
+usuario como sujeto y tiene caducidad. El frontend lo conserva solo en memoria.
+
+## Sesión de autenticación
+
+Una sesión de autenticación es el registro servidor que permite renovar el
+access token sin volver a introducir la contraseña. Pertenece a un usuario,
+tiene expiración absoluta y puede revocarse. No debe confundirse con una
+sesión de entrenamiento.
+
+## Refresh token
+
+Un refresh token es una credencial opaca y aleatoria asociada a una sesión de
+autenticación. Se transporta en una cookie `HttpOnly`, se rota en cada
+renovación y nunca se almacena en texto plano en PostgreSQL.
+
+## CSRF
+
+CSRF es el riesgo de que un sitio externo provoque una solicitud autenticada
+por cookies sin consentimiento del usuario. La gestión de sesión lo mitiga
+mediante `SameSite`, cookie host-only, métodos POST y validación explícita del
+encabezado `Origin`.
 
 ## JWT
 

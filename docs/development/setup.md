@@ -2,10 +2,11 @@
 
 ## Alcance
 
-Esta guía cubre la fundación técnica y el bloque 3A.1: frontend React con
+Esta guía cubre la fundación técnica y los bloques 3A.1 y 3A.2: frontend React con
 TypeScript, backend FastAPI, PostgreSQL local mediante Docker Compose, scripts
-PowerShell e identidad de usuario con autenticación bearer. La única entidad
-persistida es la cuenta técnica; todavía no existen datos fitness.
+PowerShell, identidad de usuario, autenticación bearer y sesión web renovable.
+Las únicas entidades persistidas son `User` y `AuthSession`; todavía no existen
+datos fitness.
 
 ## Requisitos
 
@@ -127,6 +128,20 @@ El backend utiliza:
 - `JWT_ALGORITHM`: algoritmo permitido; en esta fase solo se admite `HS256`.
 - `ACCESS_TOKEN_EXPIRE_MINUTES`: vigencia del access token, 30 minutos por
   defecto y entre 5 y 1440.
+- `REFRESH_TOKEN_EXPIRE_DAYS`: vigencia absoluta de la sesión renovable, 7
+  días por defecto y entre 1 y 90.
+- `REFRESH_COOKIE_NAME`: nombre de la cookie `HttpOnly` que transporta el
+  refresh token.
+- `REFRESH_COOKIE_SECURE`: exige HTTPS para la cookie; debe ser `true` en
+  producción.
+- `REFRESH_COOKIE_SAMESITE`: política `lax` o `strict`; nunca `none` en esta
+  fase.
+- `REFRESH_COOKIE_DOMAIN`: dominio opcional. Vacío conserva una cookie
+  host-only, que es la opción local recomendada.
+- `REFRESH_COOKIE_PATH`: limitado por defecto a `/api/v1/auth`.
+- `CSRF_TRUSTED_ORIGINS`: lista JSON de orígenes autorizados para operaciones
+  de sesión basadas en cookie; debe ser un subconjunto de
+  `CORS_ALLOWED_ORIGINS`.
 
 El entorno `production` rechaza explícitamente el marcador local documentado.
 No reutilices el secreto de desarrollo en otro entorno ni lo incluyas en
@@ -200,7 +215,8 @@ Set-Location ..
 ```
 
 La revisión inicial conserva la línea base técnica vacía. La revisión
-`20260730_0002` crea exclusivamente la tabla `users` y sus restricciones.
+`20260730_0002` crea exclusivamente la tabla `users` y sus restricciones. La
+revisión `20260730_0003` añade `auth_sessions`, sin datos fitness ni semillas.
 
 ## Inicio manual del backend
 
@@ -226,7 +242,9 @@ npm.cmd run dev -- --host 127.0.0.1
 - Liveness de la API: `http://localhost:8000/health`
 - Readiness de la API: `http://localhost:8000/ready`
 - Registro: `POST http://localhost:8000/api/v1/auth/register`
-- Access token: `POST http://localhost:8000/api/v1/auth/token`
+- Inicio de sesión: `POST http://localhost:8000/api/v1/auth/token`
+- Renovación: `POST http://localhost:8000/api/v1/auth/refresh`
+- Cierre de sesión: `POST http://localhost:8000/api/v1/auth/logout`
 - Usuario actual: `GET http://localhost:8000/api/v1/users/me`
 - OpenAPI interactivo: `http://localhost:8000/docs`
 - Esquema OpenAPI: `http://localhost:8000/openapi.json`
@@ -238,8 +256,11 @@ con un contrato controlado cuando no está disponible.
 El registro recibe JSON. El endpoint de token recibe formulario OAuth2:
 `username` es el campo técnico que contiene el correo. Las contraseñas admiten
 entre 15 y 128 caracteres, sin reglas arbitrarias de composición. El access
-token se usa en el encabezado `Authorization: Bearer`; no se almacena todavía
-en el frontend.
+token se usa en el encabezado `Authorization: Bearer` y el frontend lo conserva
+exclusivamente en memoria. El login también crea una cookie de refresh
+`HttpOnly`; el frontend la envía con credenciales únicamente a login, refresh
+y logout. Refresh y logout requieren que el navegador proporcione un
+encabezado `Origin` incluido en `CSRF_TRUSTED_ORIGINS`.
 
 ## Detener el entorno
 
@@ -342,6 +363,15 @@ Confirma que el backend está iniciado en el puerto 8000, que
 `VITE_API_BASE_URL` no contiene la ruta `/health` y que el origen del frontend
 está incluido en `CORS_ALLOWED_ORIGINS`.
 
+### La sesión no se restaura o refresh/logout devuelve 403
+
+Comprueba que el origen exacto del frontend aparece tanto en
+`CORS_ALLOWED_ORIGINS` como en `CSRF_TRUSTED_ORIGINS`. En desarrollo,
+`localhost` y `127.0.0.1` son orígenes distintos. Verifica también que el
+navegador acepta la cookie, que `REFRESH_COOKIE_PATH` conserva
+`/api/v1/auth` y que `REFRESH_COOKIE_SECURE=false` solo mientras uses HTTP
+local. No copies el refresh token a JavaScript, logs ni almacenamiento web.
+
 ### El puerto ya está ocupado
 
 Detén el proceso que lo utiliza o cambia `POSTGRES_PORT`. Si cambias un puerto,
@@ -382,6 +412,7 @@ Docker Compose solo administra PostgreSQL local. Los contenedores de frontend y
 backend y la infraestructura de producción siguen fuera de este bloque. El
 recorrido local completo de 2B.3 fue validado correctamente. La validación
 remota de 3A.1 también finalizó correctamente en el pull request #6 mediante
-los jobs `Frontend`, `Backend quality` y `PostgreSQL integration`. Refresh
-tokens, revocación, cookies, gestión de sesión en frontend y proveedores de
-identidad pertenecen a bloques posteriores.
+los jobs `Frontend`, `Backend quality` y `PostgreSQL integration`. La sesión
+web renovable de 3A.2 está disponible y validada localmente; proveedores de
+identidad externos, perfil fitness y demás datos de negocio pertenecen a
+bloques posteriores.

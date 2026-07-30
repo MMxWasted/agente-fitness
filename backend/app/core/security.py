@@ -1,4 +1,6 @@
 from datetime import UTC, datetime, timedelta
+from hashlib import sha256
+from hmac import compare_digest
 from secrets import token_urlsafe
 from uuid import UUID
 
@@ -12,6 +14,7 @@ from app.core.config import Settings, get_settings
 
 _password_hash = PasswordHash.recommended()
 _dummy_password_hash = _password_hash.hash(token_urlsafe(32))
+_REFRESH_TOKEN_ENTROPY_BYTES = 48
 
 
 class InvalidAccessTokenError(ValueError):
@@ -44,6 +47,18 @@ def verify_password_and_update(
 
 def perform_dummy_password_verification(password: SecretStr) -> None:
     verify_password(password, _dummy_password_hash)
+
+
+def generate_refresh_token() -> str:
+    return token_urlsafe(_REFRESH_TOKEN_ENTROPY_BYTES)
+
+
+def hash_refresh_token(refresh_token: str) -> str:
+    return sha256(refresh_token.encode("utf-8")).hexdigest()
+
+
+def verify_refresh_token(refresh_token: str, stored_hash: str) -> bool:
+    return compare_digest(hash_refresh_token(refresh_token), stored_hash)
 
 
 def create_access_token(

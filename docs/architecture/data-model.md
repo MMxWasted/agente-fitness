@@ -7,9 +7,9 @@ Documentar el modelo conceptual de dominio de Agente Fitness, manteniendo el foc
 ## Alcance
 
 Este documento describe las entidades y relaciones conceptuales necesarias
-para soporte del MVP inicial. Únicamente `User` está implementada en el bloque
-3A.1; el resto continúa siendo diseño futuro y no representa tablas
-existentes.
+para soporte del MVP inicial. `User` está implementada desde 3A.1 y
+`AuthSession` desde 3A.2; el resto continúa siendo diseño futuro y no
+representa tablas existentes.
 
 ## Principios del modelo
 
@@ -25,6 +25,7 @@ existentes.
 
 ```mermaid
 erDiagram
+    User ||--o{ AuthSession : authenticates_with
     User ||--o| UserProfile : has
     User ||--o{ FitnessGoal : has
     User ||--o{ Routine : owns
@@ -71,6 +72,28 @@ normalización del correo elimina espacio exterior y aplica una comparación
 consistente sin distinguir mayúsculas. No se añadió un índice separado porque
 la restricción única de PostgreSQL ya proporciona el acceso necesario para
 login y detección de duplicados.
+
+### AuthSession
+
+- Propósito: mantener una sesión web renovable y revocable sin volver a
+  solicitar la contraseña.
+- Campos implementados: id UUID, user_id, refresh_token_hash, created_at,
+  updated_at, expires_at y revoked_at.
+- Relaciones: pertenece a un único User y usa
+  `fk_auth_sessions_user_id_users` con `ON DELETE CASCADE`.
+- Restricciones implementadas: clave primaria `pk_auth_sessions`, digest único
+  `uq_auth_sessions_refresh_token_hash` y expiración posterior a creación
+  mediante `ck_auth_sessions_expires_after_created`.
+- Índices implementados: `ix_auth_sessions_user_id` para propiedad y
+  `ix_auth_sessions_expires_at` para limpieza.
+- Ciclo de vida: activa, rotada mediante sustitución del digest, revocada o
+  caducada. La rotación no amplía la expiración absoluta.
+- Privacidad: solo persiste el digest SHA-256 de un token aleatorio; el token
+  completo no aparece en el modelo, respuestas ni representaciones.
+
+Una eliminación futura de la cuenta elimina sus sesiones porque son
+credenciales técnicas sin valor histórico independiente. Las sesiones
+caducadas se limpian de forma oportunista al crear o renovar sesiones.
 
 ### UserProfile
 
@@ -328,6 +351,7 @@ Se debe dejar un registro conceptual de quién hizo qué cambio, cuándo y con q
 ## Índices conceptuales
 
 - índice por user_id en datos privados;
+- índices implementados de sesiones por user_id y expires_at;
 - índice por created_at en conversaciones y registros temporales;
 - índice por status en recomendaciones y sesiones;
 - índice por exercise_id en tablas relacionadas con ejercicios.

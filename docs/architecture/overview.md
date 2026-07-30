@@ -4,7 +4,8 @@
 
 Este documento describe la arquitectura prevista para Agente Fitness. La
 fundación técnica ya materializa frontend, backend y persistencia local; el
-bloque 3A.1 añade identidad y autenticación backend. Las capas fitness y las
+bloque 3A.1 añade identidad y autenticación backend, y 3A.2 incorpora gestión
+de sesión renovable e interfaz mínima de login. Las capas fitness y las
 decisiones futuras continúan siendo conceptuales y deberán respaldarse con ADR
 cuando corresponda.
 
@@ -50,9 +51,10 @@ flowchart LR
 - Frontend: propuesta de interfaz web orientada a una experiencia mobile-first.
 - Backend: propuesta de API con rutas, esquemas, servicios de dominio, repositorios y lógica de control.
 - Persistencia: PostgreSQL local con una base técnica síncrona de SQLAlchemy 2,
-  Psycopg 3 y Alembic; solo está materializada la cuenta técnica `User`.
+  Psycopg 3 y Alembic; están materializadas la cuenta técnica `User` y
+  `AuthSession`.
 - Autenticación: correo y contraseña Argon2id con access token JWT bearer,
-  limitada al backend según ADR-005.
+  junto con sesión web renovable según ADR-005 y ADR-013.
 - Analítica determinista: servicios independientes de cálculo de métricas.
 - Motor determinista de rutinas: lógica explícita para generar borradores de rutina.
 - Agente Fitness: un único agente orquestador con herramientas limitadas.
@@ -92,6 +94,8 @@ flowchart TB
 - Recoger datos de entrada del usuario.
 - Mostrar estados de carga, vacío, error y confirmación.
 - Consumir la API backend.
+- Conservar el access token solo en memoria y delegar el refresh token a una
+  cookie `HttpOnly` administrada por el backend.
 - No acceder directamente a PostgreSQL ni al proveedor de IA.
 - No almacenar secretos ni credenciales de acceso.
 
@@ -210,8 +214,7 @@ La arquitectura propuesta se concibe como un sistema desplegable en entorno de d
 
 - Formalizar la evolución de la base técnica actual de React, FastAPI,
   SQLAlchemy y Alembic conforme aparezcan necesidades de negocio.
-- Formalizar renovación, revocación y almacenamiento de sesión del cliente;
-  autorización por propietario y gestión de secretos de producción.
+- Formalizar autorización por propietario y gestión de secretos de producción.
 - Definir la estrategia concreta de observabilidad y trazabilidad.
 - Decidir la forma exacta de integrar el OpenAI Agents SDK, si se autoriza su uso.
 - Determinar la política de despliegue y entorno de ejecución.

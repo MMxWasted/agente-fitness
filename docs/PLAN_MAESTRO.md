@@ -543,6 +543,22 @@ Estado de 3A.1: la identidad técnica implementa todos los campos anteriores
 salvo `deleted_at`; el borrado lógico continúa aplazado y no forma parte de la
 primera migración de usuarios.
 
+### 9.1.1 AuthSession
+
+* `id`
+* `user_id`
+* `refresh_token_hash`
+* `created_at`
+* `updated_at`
+* `expires_at`
+* `revoked_at`
+
+Estado de 3A.2: la sesión renovable almacena únicamente el digest SHA-256 del
+refresh token opaco. La clave foránea hacia `User` usa borrado en cascada, la
+rotación sustituye el digest con bloqueo transaccional y logout marca la
+revocación. La expiración es absoluta y la limpieza de sesiones caducadas es
+oportunista.
+
 ### 9.2 UserProfile
 
 * `id`
@@ -1226,6 +1242,11 @@ Resultado esperado:
 * Preferencias.
 * Limitaciones.
 * Pruebas de autorización.
+
+Estado operativo: 3A.1 implementa identidad y access token; 3A.2 implementa la
+gestión de sesión web, renovación, revocación e interfaz mínima. Perfil,
+objetivos, equipamiento, preferencias, limitaciones y autorización por
+propietario continúan pendientes.
 
 ### Fase 4 — Catálogo de ejercicios
 

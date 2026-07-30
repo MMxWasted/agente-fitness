@@ -14,7 +14,9 @@
   --text-muted: #526079;
   --text-soft: #7a879d;
   --border: #dce3ed;
+  --border-strong: #aebbd0;
   --accent: #2357d9;
+  --focus-ring: #8eafff;
   --status-checking: #d08a16;
   --status-checking-soft: #fff2d6;
   --status-available: #16845b;

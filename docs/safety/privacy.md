@@ -51,8 +51,15 @@ cuando se incorporen recursos privados.
 
 Las contraseñas solo se conservan como hashes Argon2id. Contraseñas, hashes,
 secretos JWT y tokens completos no deben incluirse en respuestas ni logs. El
-frontend todavía no implementa autenticación y no debe almacenar el token
-hasta que se decida una estrategia de sesión para el navegador.
+frontend conserva el access token solo en memoria; no utiliza almacenamiento
+web persistente. El refresh token se entrega mediante cookie `HttpOnly` y
+PostgreSQL conserva únicamente su digest SHA-256.
+
+Cada renovación rota el refresh token y logout revoca la sesión activa. Las
+operaciones basadas en cookie exigen un origen confiable, además de
+`SameSite`, ruta limitada y CORS con credenciales para orígenes explícitos. Las
+sesiones caducadas se eliminan oportunistamente y una sesión no sobrevive a la
+eliminación futura de su cuenta.
 
 ## Logs
 
@@ -97,7 +104,7 @@ No deben almacenarse secretos en Git, en texto plano en el repositorio ni en fro
 Los datos de desarrollo, demostración y pruebas deben separarse de los datos
 reales para evitar mezclas y exposición accidental. Las pruebas de integración
 de autenticación rechazan bases cuyo nombre no termine en `_test` o `_ci` y
-eliminan exclusivamente las cuentas que crean.
+eliminan exclusivamente las cuentas y sesiones que crean.
 
 ## Incidentes
 
