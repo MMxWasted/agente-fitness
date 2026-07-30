@@ -272,9 +272,10 @@ proyecto.
 | `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación real, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
 
 Los tres jobs mantienen los nombres `Frontend`, `Backend quality` y
-`PostgreSQL integration`. La fundación 2B ya fue validada en GitHub. Los
-cambios de 3A.1 añaden al tercero la suite real de usuarios y autenticación;
-esa ejecución remota debe confirmarse en el pull request antes de integrar.
+`PostgreSQL integration`. La fundación 2B ya fue validada en GitHub. En el
+pull request #6 del bloque 3A.1, `Frontend`, `Backend quality` y
+`PostgreSQL integration` finalizaron correctamente; el tercero incluyó la
+suite real de usuarios y autenticación sobre PostgreSQL.
 
 El job de integración usa `postgres:18.4` como service container. La base,
 usuario y contraseña se definen como valores efímeros exclusivos de CI y no

@@ -380,6 +380,8 @@ la parada normal.
 
 Docker Compose solo administra PostgreSQL local. Los contenedores de frontend y
 backend y la infraestructura de producción siguen fuera de este bloque. El
-workflow `CI` y el recorrido local completo de 2B.3 fueron validados
-correctamente. Refresh tokens, revocación, cookies, gestión de sesión en
-frontend y proveedores de identidad pertenecen a bloques posteriores.
+recorrido local completo de 2B.3 fue validado correctamente. La validación
+remota de 3A.1 también finalizó correctamente en el pull request #6 mediante
+los jobs `Frontend`, `Backend quality` y `PostgreSQL integration`. Refresh
+tokens, revocación, cookies, gestión de sesión en frontend y proveedores de
+identidad pertenecen a bloques posteriores.
