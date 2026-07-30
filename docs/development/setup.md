@@ -225,5 +225,6 @@ actualiza también `DATABASE_URL`, `VITE_API_BASE_URL` o
 ## Infraestructura pendiente
 
 Docker Compose solo administra PostgreSQL local. Los contenedores de frontend y
-backend, la infraestructura de producción y la integración continua siguen
-fuera de este bloque.
+backend y la infraestructura de producción siguen fuera de este bloque. La
+integración continua ya está configurada, pero debe validarse mediante una
+ejecución remota satisfactoria en GitHub.

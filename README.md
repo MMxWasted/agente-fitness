@@ -12,8 +12,10 @@ TypeScript, backend FastAPI, PostgreSQL local mediante Docker Compose,
 SQLAlchemy, Alembic, endpoints `GET /health` y `GET /ready`, y una página
 inicial que comprueba el estado de la API.
 
-La persistencia aún no contiene modelos de negocio. La integración continua,
-la contenedorización de las aplicaciones y el resto de la infraestructura de la
+La persistencia aún no contiene modelos de negocio. La integración continua
+está configurada para validar frontend, backend y PostgreSQL, pero permanece
+pendiente de una primera ejecución satisfactoria en GitHub. La
+contenedorización de las aplicaciones y el resto de la infraestructura de la
 Fase 2 siguen pendientes.
 
 ## Inicio rápido
@@ -42,6 +44,17 @@ Consulta la [configuración completa](docs/development/setup.md) y los
 [comandos de pruebas](docs/development/testing.md). Las operaciones y
 decisiones de persistencia están en la
 [guía de base de datos](docs/development/database.md).
+
+## Integración continua
+
+El workflow `CI` se ejecuta en pull requests dirigidas a `main`, pushes sobre
+`main` y ejecuciones manuales. Sus jobs independientes comprueban el frontend,
+la calidad del backend y la integración real con un PostgreSQL efímero.
+
+Consulta la [guía de pruebas](docs/development/testing.md#integración-continua)
+para ver los comandos equivalentes, el diagnóstico de fallos y las
+comprobaciones que deberán proteger `main` después de la primera ejecución
+remota correcta.
 
 ## Objetivo general
 
