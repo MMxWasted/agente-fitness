@@ -127,9 +127,10 @@ El job `PostgreSQL integration` validó la fundación con PostgreSQL real,
 migraciones reversibles y ambos contratos mediante un service container. En
 3A.1 también ejecuta la suite de usuarios y autenticación sobre la base
 efímera de CI. El recorrido local completo de los scripts 2B.3 fue validado con
-Docker. En 3A.2, la validación local sobre PostgreSQL real cubre la migración
-de `auth_sessions`, creación, rotación, rechazo del token anterior, revocación,
-caducidad, cuenta inactiva, eliminación en cascada y concurrencia de refresh.
+Docker. En 3A.2, la validación local y el job `PostgreSQL integration` del pull
+request #8 cubrieron la migración de `auth_sessions`, creación, rotación,
+rechazo del token anterior, revocación, caducidad, cuenta inactiva, eliminación
+en cascada y concurrencia de refresh. El pull request fue fusionado en `main`.
 
 ## Límites actuales
 

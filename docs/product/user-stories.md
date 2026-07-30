@@ -8,7 +8,8 @@
 - Prioridad: Must
 - Fase: 3
 - Dependencias: Fundación técnica
-- Estado: Pending
+- Estado: Partial — el registro backend está implementado; la interfaz de
+  registro orientada al usuario permanece pendiente.
 
 #### Criterios de aceptación
 
@@ -23,7 +24,8 @@
 - Prioridad: Must
 - Fase: 3
 - Dependencias: AUTH-001
-- Estado: Pending
+- Estado: Completed — inicio y cierre de sesión implementados, validados en el
+  pull request #8 y fusionados en `main`.
 
 #### Criterios de aceptación
 

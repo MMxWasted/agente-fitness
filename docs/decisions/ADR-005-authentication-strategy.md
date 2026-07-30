@@ -74,9 +74,9 @@ la sesión servidor, el refresh token y los controles del navegador.
 ## Consecuencias negativas
 
 - Un access token válido no puede revocarse individualmente antes de caducar.
-- No existe continuidad automática de sesión al expirar.
-- Un cliente futuro deberá decidir almacenamiento y protección del token antes
-  de implementar la interfaz.
+- El alcance original de 3A.1 no proporcionaba continuidad automática de
+  sesión ni definía el almacenamiento y la protección del token en el cliente
+  web. ADR-013 resolvió ambos aspectos para 3A.2.
 - HS256 requiere custodiar y rotar un secreto compartido en cada entorno.
 
 ## Riesgos
@@ -96,15 +96,17 @@ conflicto es necesario para completar ese flujo. Los datos de pruebas deben
 usar una base separada de los datos locales normales.
 
 El uso del encabezado bearer no introduce por sí mismo cookies ni protección
-CSRF; esas decisiones deberán evaluarse conjuntamente si el cliente web adopta
-cookies. Rate limiting y monitoreo de abuso quedan como endurecimiento futuro.
+CSRF. ADR-013 añadió una cookie de refresh `HttpOnly` y protección de origen
+para las operaciones de sesión del cliente web. Rate limiting y monitoreo de
+abuso quedan como endurecimiento futuro.
 
 ## Condiciones de revisión
 
-Revisar esta decisión antes de implementar persistencia de sesión en el
-frontend, refresh tokens, cookies, revocación, clientes móviles, recuperación
-de cuenta, proveedores externos o despliegue distribuido. Un cambio
-incompatible debe registrarse mediante un nuevo ADR que sustituya este.
+La revisión previa a implementar persistencia de sesión, refresh tokens,
+cookies y revocación se realizó mediante ADR-013. Revisar conjuntamente ambas
+decisiones antes de incorporar clientes móviles, recuperación de cuenta,
+proveedores externos o despliegue distribuido. Un cambio incompatible debe
+registrarse mediante un nuevo ADR que sustituya este.
 
 ## Documentos relacionados
 

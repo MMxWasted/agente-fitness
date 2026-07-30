@@ -308,6 +308,11 @@ pull request #6 del bloque 3A.1, `Frontend`, `Backend quality` y
 `PostgreSQL integration` finalizaron correctamente; el tercero incluyó la
 suite real de usuarios y autenticación sobre PostgreSQL.
 
+En el pull request #8 del bloque 3A.2, esos mismos tres jobs finalizaron
+correctamente. `PostgreSQL integration` incluyó la migración y la suite real
+de sesiones sobre PostgreSQL. El pull request fue fusionado en `main`, por lo
+que no queda validación remota pendiente para 3A.2.
+
 El job de integración usa `postgres:18.4` como service container. La base,
 usuario y contraseña se definen como valores efímeros exclusivos de CI y no
 proceden de secretos personales. La `DATABASE_URL` solo existe en ese job.

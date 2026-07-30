@@ -81,8 +81,9 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
   - [x] Implementar identidad y autenticación backend mínima (bloque 3A.1
     implementado, validado y fusionado; los tres jobs de GitHub Actions
     finalizaron correctamente en el pull request #6).
-  - [x] Implementar gestión de sesión (bloque 3A.2 con renovación rotatoria,
-    revocación servidor e interfaz frontend mínima).
+  - [x] Implementar gestión de sesión (bloque 3A.2 implementado, validado y
+    fusionado; `Frontend`, `Backend quality` y `PostgreSQL integration`
+    finalizaron correctamente en el pull request #8).
   - [ ] Implementar perfil fitness.
   - [ ] Implementar validación y autorización por propietario.
 
