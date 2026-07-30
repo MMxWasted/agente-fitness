@@ -62,7 +62,7 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
   - [~] Configurar Alembic (implementado; ciclo conectado pendiente de verificar).
   - [x] Configurar variables de entorno.
   - [x] Configurar linting, tipos y pruebas.
-  - [ ] Configurar GitHub Actions.
+  - [~] Configurar GitHub Actions (workflow preparado; ejecución remota pendiente).
   - [x] Implementar GET /health.
   - [x] Implementar GET /ready con comprobación mínima de PostgreSQL.
   - [x] Crear una página inicial mínima que compruebe el estado de la API.

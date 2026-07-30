@@ -20,6 +20,10 @@
 - Pruebas unitarias de configuración, ciclo de sesión y disponibilidad de la
   base sin depender de PostgreSQL externo.
 - Documentación reproducible de operaciones y migraciones de la base local.
+- Workflow mínimo de GitHub Actions con jobs independientes para frontend,
+  calidad backend e integración PostgreSQL.
+- Validación automatizada de Compose, ciclo reversible de Alembic y contratos
+  HTTP de liveness y readiness contra un PostgreSQL efímero.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.
