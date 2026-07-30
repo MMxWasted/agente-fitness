@@ -57,15 +57,16 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
   - [x] Crear la estructura real del monorepo.
   - [x] Inicializar frontend React con TypeScript.
   - [x] Inicializar backend FastAPI.
-  - [ ] Configurar PostgreSQL.
-  - [ ] Configurar Docker Compose.
-  - [ ] Configurar Alembic.
+  - [~] Configurar PostgreSQL (implementado; verificación real pendiente de Docker).
+  - [~] Configurar Docker Compose (implementado; verificación real pendiente).
+  - [~] Configurar Alembic (implementado; ciclo conectado pendiente de verificar).
   - [x] Configurar variables de entorno.
   - [x] Configurar linting, tipos y pruebas.
   - [ ] Configurar GitHub Actions.
   - [x] Implementar GET /health.
+  - [x] Implementar GET /ready con comprobación mínima de PostgreSQL.
   - [x] Crear una página inicial mínima que compruebe el estado de la API.
-  - [ ] Documentar y verificar el arranque reproducible.
+  - [~] Documentar y verificar el arranque reproducible.
 
 ## Fase 3. Autenticación y perfil
 

@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Este documento describe la arquitectura prevista para Agente Fitness como una propuesta documental previa a la implementación. Las tecnologías listadas aquí están planificadas y deberán respaldarse con ADR antes de considerarse decisiones arquitectónicas cerradas.
+Este documento describe la arquitectura prevista para Agente Fitness. La fundación técnica ya materializa frontend, backend y persistencia local; las capas de negocio y las decisiones futuras continúan siendo conceptuales y deberán respaldarse con ADR cuando corresponda.
 
 ## Objetivos arquitectónicos
 
@@ -45,7 +45,8 @@ flowchart LR
 
 - Frontend: propuesta de interfaz web orientada a una experiencia mobile-first.
 - Backend: propuesta de API con rutas, esquemas, servicios de dominio, repositorios y lógica de control.
-- Persistencia: PostgreSQL como base de trabajo futuro, con SQLAlchemy y Alembic como opciones por confirmar.
+- Persistencia: PostgreSQL local con una base técnica síncrona de SQLAlchemy 2,
+  Psycopg 3 y Alembic, todavía sin modelos de negocio.
 - Analítica determinista: servicios independientes de cálculo de métricas.
 - Motor determinista de rutinas: lógica explícita para generar borradores de rutina.
 - Agente Fitness: un único agente orquestador con herramientas limitadas.
@@ -197,12 +198,12 @@ Se prevé registrar eventos relevantes de solicitud, autorización, errores, eje
 
 ## Despliegue conceptual
 
-La arquitectura propuesta se concibe como un sistema desplegable en entorno de desarrollo y producción con una separación clara entre frontend, backend, base de datos y servicios auxiliares. Docker Compose se considera una herramienta de entorno local planificada, no una configuración existente.
+La arquitectura propuesta se concibe como un sistema desplegable en entorno de desarrollo y producción con una separación clara entre frontend, backend, base de datos y servicios auxiliares. Docker Compose administra actualmente solo PostgreSQL local; no representa ni decide la topología de producción.
 
 ## Decisiones pendientes
 
-- Definir de forma formal si React con TypeScript y FastAPI serán las tecnologías definitivas.
-- Decidir si SQLAlchemy y Alembic se adoptan como base de persistencia.
+- Formalizar la evolución de la base técnica actual de React, FastAPI,
+  SQLAlchemy y Alembic conforme aparezcan necesidades de negocio.
 - Formalizar cómo se gestionarán autenticación, autorización y secretos.
 - Definir la estrategia concreta de observabilidad y trazabilidad.
 - Decidir la forma exacta de integrar el OpenAI Agents SDK, si se autoriza su uso.

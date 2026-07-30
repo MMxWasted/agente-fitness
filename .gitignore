@@ -21,6 +21,7 @@ htmlcov/
 node_modules/
 dist/
 .vite/
+.npm-cache/
 coverage/
 
 # Editors
