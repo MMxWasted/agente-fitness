@@ -27,6 +27,7 @@ Un Architecture Decision Record (ADR) documenta una decisión arquitectónica re
 | ADR-010 | Exportación y eliminación de datos | Accepted | [ADR-010](ADR-010-data-export-deletion.md) |
 | ADR-011 | Biblioteca de componentes de interfaz | Proposed | [ADR-011](ADR-011-component-library.md) |
 | ADR-012 | Estrategia de despliegue | Proposed | [ADR-012](ADR-012-deployment-strategy.md) |
+| ADR-013 | Gestión de sesión web renovable | Accepted | [ADR-013](ADR-013-session-management.md) |
 
 ## Reglas para nuevos ADR
 
@@ -39,4 +40,3 @@ Un Architecture Decision Record (ADR) documenta una decisión arquitectónica re
 ## Sustitución de decisiones
 
 Una decisión `Accepted` no debe modificarse silenciosamente para expresar una dirección incompatible. El cambio debe documentarse en un nuevo ADR, que referencie al anterior y explique el motivo. El ADR sustituido pasa a `Superseded` e indica el identificador de la decisión que lo reemplaza.
-

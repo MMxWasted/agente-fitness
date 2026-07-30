@@ -4,7 +4,8 @@
 
 El bloque 2B.1 incorpora PostgreSQL local, conexión con SQLAlchemy 2 y
 migraciones Alembic. El bloque 3A.1 añade la primera entidad persistida:
-exclusivamente la identidad técnica `User`, sin perfil ni datos fitness.
+la identidad técnica `User`. El bloque 3A.2 añade `AuthSession` para renovar
+y revocar sesiones web, todavía sin perfil ni datos fitness.
 
 ## Decisiones de implementación
 
@@ -28,7 +29,11 @@ exclusivamente la identidad técnica `User`, sin perfil ni datos fitness.
 La revisión inicial es deliberadamente vacía y conserva la línea base técnica.
 La revisión `20260730_0002` crea `users` con UUID, correo único, hash de
 contraseña, estado y timestamps con zona horaria. Es reversible a la revisión
-anterior y no crea datos semilla.
+anterior y no crea datos semilla. La revisión `20260730_0003` crea
+`auth_sessions` con el digest único del refresh token, timestamps de creación,
+actualización, expiración y revocación, índices por usuario y expiración, y
+eliminación en cascada al borrar la cuenta. También es reversible y no
+persiste el refresh token en claro.
 
 ## Contratos de diagnóstico
 
@@ -122,11 +127,14 @@ El job `PostgreSQL integration` validó la fundación con PostgreSQL real,
 migraciones reversibles y ambos contratos mediante un service container. En
 3A.1 también ejecuta la suite de usuarios y autenticación sobre la base
 efímera de CI. El recorrido local completo de los scripts 2B.3 fue validado con
-Docker.
+Docker. En 3A.2, la validación local sobre PostgreSQL real cubre la migración
+de `auth_sessions`, creación, rotación, rechazo del token anterior, revocación,
+caducidad, cuenta inactiva, eliminación en cascada y concurrencia de refresh.
 
 ## Límites actuales
 
-Solo existen el modelo, repositorio y servicio necesarios para identidad y
-autenticación. No existen perfil, entidades fitness, seeds, acceso desde el
-frontend ni Agente Fitness. Tampoco se define una topología de producción:
-esas decisiones pertenecen a bloques posteriores.
+Solo existen los modelos, repositorios y servicios necesarios para identidad,
+autenticación y gestión de sesión. El frontend dispone de acceso autenticado
+mínimo, pero no existen perfil, entidades fitness, seeds ni Agente Fitness.
+Tampoco se define una topología de producción: esas decisiones pertenecen a
+bloques posteriores.

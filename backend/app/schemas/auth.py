@@ -15,6 +15,7 @@ class TokenResponse(BaseModel):
 
     access_token: str = Field(repr=False)
     token_type: Literal["bearer"] = "bearer"
+    expires_in: int = Field(gt=0)
 
 
 class ErrorResponse(BaseModel):

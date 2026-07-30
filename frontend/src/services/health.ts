@@ -1,15 +1,7 @@
+import { getApiBaseUrl } from './api'
+
 export interface HealthResponse {
   status: 'ok'
-}
-
-function getApiBaseUrl(): string {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim()
-
-  if (!apiBaseUrl) {
-    throw new Error('VITE_API_BASE_URL is not configured')
-  }
-
-  return apiBaseUrl.replace(/\/+$/, '')
 }
 
 function isHealthResponse(value: unknown): value is HealthResponse {

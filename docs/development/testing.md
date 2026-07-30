@@ -27,8 +27,11 @@ npm.cmd run build
 - `test` ejecuta Vitest y Testing Library con jsdom.
 - `build` comprueba tipos y genera el bundle de Vite.
 
-Las pruebas del frontend simulan el servicio de salud y no dependen de un
-backend real.
+Las pruebas del frontend simulan los servicios de salud y autenticación; no
+dependen de un backend real. Cubren renderizado, disponibilidad de la API,
+login correcto e incorrecto, restauración y expiración de sesión, fallos de
+red y logout. También comprueban que el access token no se persiste en Web
+Storage ni se representa en el DOM.
 
 ## Backend
 
@@ -55,7 +58,11 @@ Las pruebas automatizadas cubren:
 - emisión y validación de JWT, incluida expiración, firma y claims;
 - configuración y enmascarado del secreto;
 - registro, login, usuario actual y errores genéricos sin exponer el hash;
-- tokens ausentes, inválidos o de identidades inexistentes e inactivas.
+- tokens ausentes, inválidos o de identidades inexistentes e inactivas;
+- generación y digest de refresh tokens opacos;
+- atributos y borrado de la cookie `HttpOnly`;
+- validación de orígenes frente a CSRF;
+- creación, rotación, revocación, caducidad y limpieza de sesiones.
 
 La suite no necesita Docker ni un PostgreSQL externo.
 
@@ -157,6 +164,8 @@ $env:DATABASE_URL = (
 $env:JWT_SECRET_KEY = (
     'integration-test-only-secret-that-is-at-least-32-bytes'
 )
+$env:CORS_ALLOWED_ORIGINS = '["http://localhost:5173"]'
+$env:CSRF_TRUSTED_ORIGINS = '["http://localhost:5173"]'
 
 Set-Location backend
 uv run alembic upgrade head
@@ -168,9 +177,11 @@ uv run pytest integration_tests -m integration
 ```
 
 La suite crea correos únicos, elimina exclusivamente sus propios usuarios y
-comprueba el esquema PostgreSQL, la revisión Alembic, registro, persistencia,
-hash, duplicado, login, `/users/me`, cuentas inactivas, tokens inválidos y los
-contratos de `/health` y `/ready`.
+sesiones, y comprueba el esquema PostgreSQL, la revisión Alembic, registro,
+persistencia, hash, duplicado, login, `/users/me`, cuentas inactivas, tokens
+inválidos y los contratos de `/health` y `/ready`. Para 3A.2 añade creación,
+rotación, rechazo del refresh anterior, revocación, caducidad, eliminación en
+cascada y la garantía de un único ganador ante refresh concurrente.
 
 Para el recorrido HTTP manual, conserva esas variables y ejecuta en una
 terminal:
@@ -210,20 +221,38 @@ $tokenResponse = Invoke-RestMethod `
     -Method Post `
     -Uri "$baseUrl/api/v1/auth/token" `
     -ContentType 'application/x-www-form-urlencoded' `
-    -Body @{ username = $email; password = $password }
+    -Headers @{ Origin = 'http://localhost:5173' } `
+    -Body @{ username = $email; password = $password } `
+    -SessionVariable browserSession
 
 $currentUser = Invoke-RestMethod `
     -Method Get `
     -Uri "$baseUrl/api/v1/users/me" `
     -Headers @{ Authorization = "Bearer $($tokenResponse.access_token)" }
 
+$refreshed = Invoke-RestMethod `
+    -Method Post `
+    -Uri "$baseUrl/api/v1/auth/refresh" `
+    -Headers @{ Origin = 'http://localhost:5173' } `
+    -WebSession $browserSession
+
+$loggedOut = Invoke-WebRequest `
+    -Method Post `
+    -Uri "$baseUrl/api/v1/auth/logout" `
+    -Headers @{ Origin = 'http://localhost:5173' } `
+    -WebSession $browserSession
+
 $registered
 $currentUser
+$loggedOut.StatusCode
 ```
 
-No escribas `$tokenResponse` completo en consola. Repite el registro para
-obtener 409 y prueba una contraseña o token incorrectos para obtener 401. Las
-respuestas públicas no deben contener `password` ni `password_hash`.
+No escribas `$tokenResponse`, `$refreshed` ni la cookie en consola. El resultado
+de logout debe ser 204. La cookie rotada anterior debe dejar de ser válida y la
+cookie revocada no debe renovar la sesión. Repite el registro para obtener 409
+y prueba una contraseña o token incorrectos para obtener 401. Las respuestas
+públicas no deben contener `password`, `password_hash`, refresh tokens ni sus
+digests.
 
 Detén Uvicorn con `Ctrl+C`, elimina las variables del proceso y conserva el
 volumen al detener la infraestructura:
@@ -233,6 +262,8 @@ Set-Location ..
 Remove-Item Env:ENVIRONMENT
 Remove-Item Env:DATABASE_URL
 Remove-Item Env:JWT_SECRET_KEY
+Remove-Item Env:CORS_ALLOWED_ORIGINS
+Remove-Item Env:CSRF_TRUSTED_ORIGINS
 docker compose down
 ```
 
@@ -269,7 +300,7 @@ proyecto.
 | --- | --- | --- |
 | `Frontend` | Instalación bloqueada, lint, tipos, tests y build | Comandos de [Frontend](#frontend) |
 | `Backend quality` | Sincronización bloqueada, Ruff, formato, mypy y pytest | Comandos de [Backend](#backend) |
-| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación real, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
+| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación y sesiones reales, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
 
 Los tres jobs mantienen los nombres `Frontend`, `Backend quality` y
 `PostgreSQL integration`. La fundación 2B ya fue validada en GitHub. En el
@@ -446,3 +477,52 @@ La verificación manual adicional debe recorrer registro 201, duplicado 409,
 login correcto, credenciales incorrectas 401, `/users/me` correcto, petición
 sin token, token inválido y ausencia de `password_hash`. El entorno se detiene
 con `.\scripts\stop-dev.ps1`; la parada normal conserva el volumen PostgreSQL.
+
+## Verificación completa del bloque 3A.2
+
+Ejecuta todas las comprobaciones de calidad y la integración PostgreSQL sobre
+una base exclusiva `_test` o `_ci`:
+
+```powershell
+Set-Location frontend
+npm.cmd ci
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run test
+npm.cmd run build
+
+Set-Location ..\backend
+uv sync --locked
+uv lock --check
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy app tests
+uv run pytest
+
+# Con las variables de integración definidas como en la sección anterior:
+uv run alembic upgrade head
+uv run alembic current --check-heads
+uv run alembic downgrade -1
+uv run alembic upgrade head
+uv run alembic current --check-heads
+uv run alembic check
+uv run pytest integration_tests -m integration
+
+Set-Location ..
+git diff --check
+git status --short --untracked-files=all
+```
+
+La revisión manual y automatizada debe confirmar:
+
+- login y restauración de sesión sin guardar el access token en almacenamiento
+  persistente del navegador;
+- cookie de refresh `HttpOnly`, rotatoria, con expiración absoluta y atributos
+  coherentes con el entorno;
+- rechazo de refresh ausente, caducado, revocado, reutilizado o asociado a una
+  cuenta inactiva;
+- logout 204 idempotente que revoca la sesión y elimina la cookie;
+- rechazo 403 de refresh/logout cuando falta un `Origin` confiable;
+- protección CORS con credenciales solo para orígenes explícitos;
+- migración 3A.2 reversible, en `head` y sin cambios de esquema pendientes;
+- ausencia de secretos, tokens o digests en respuestas, logs, DOM y Git.

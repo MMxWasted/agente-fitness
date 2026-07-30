@@ -28,7 +28,7 @@ Definir un diseño conceptual de API que sea coherente con la arquitectura previ
 - privacy/export
 - account deletion
 
-## Autenticación
+## Autenticación y gestión de sesión
 
 El bloque 3A.1 implementa correo y contraseña con access tokens JWT bearer,
 según [ADR-005](../decisions/ADR-005-authentication-strategy.md). El access
@@ -40,22 +40,43 @@ El campo técnico `username` del formulario OAuth2 contiene el correo
 electrónico. La identidad siempre procede del token validado y nunca de un
 identificador arbitrario proporcionado por el cliente.
 
+El bloque 3A.2 añade la gestión de sesión definida en
+[ADR-013](../decisions/ADR-013-session-management.md). El access token
+permanece solo en memoria del frontend. Un refresh token opaco viaja en cookie
+`HttpOnly`, mientras PostgreSQL conserva únicamente su digest SHA-256. La
+renovación rota el digest de forma transaccional y no extiende la expiración
+absoluta.
+
 ### Contratos implementados
 
 | Método y ruta | Entrada | Respuesta correcta | Errores relevantes |
 | --- | --- | --- | --- |
 | `POST /api/v1/auth/register` | JSON con `email` y `password` | 201 y usuario público | 409 correo registrado; 422 entrada inválida |
-| `POST /api/v1/auth/token` | `application/x-www-form-urlencoded` con `username` y `password` | 200 con `access_token` y `token_type: bearer` | 401 credenciales incorrectas |
+| `POST /api/v1/auth/token` | Formulario OAuth2; `Origin` validado si está presente | 200 con access token y cookie de refresh | 401 credenciales incorrectas; 403 origen no confiable |
+| `POST /api/v1/auth/refresh` | Cookie de refresh y `Origin` confiable | 200 con access token y cookie rotada | 401 sesión inválida; 403 origen ausente o no confiable |
+| `POST /api/v1/auth/logout` | Cookie opcional y `Origin` confiable | 204, revocación y eliminación de cookie | 403 origen ausente o no confiable |
 | `GET /api/v1/users/me` | `Authorization: Bearer <token>` | 200 y usuario público | 401 token o identidad inválidos; 403 cuenta inactiva |
 
 El usuario público contiene `id`, `email`, `is_active`, `created_at` y
 `updated_at`. Ningún contrato expone la contraseña ni `password_hash`. El
 registro no emite token implícitamente. Los errores de login son genéricos para
-no distinguir correo inexistente de contraseña incorrecta.
+no distinguir correo inexistente de contraseña incorrecta. Las respuestas de
+token contienen `access_token`, `token_type: bearer` y `expires_in`; nunca
+incluyen el refresh token.
 
-Refresh tokens, revocación, cierre de sesión servidor, cookies, recuperación,
-verificación de correo, MFA y login social no están implementados. Tampoco
-existe aún almacenamiento de token ni interfaz de autenticación en frontend.
+Refresh y logout comparten un error 401 genérico para token desconocido,
+caducado, rotado, revocado o asociado a un usuario inactivo. Logout es
+idempotente y no revela si la sesión existía. `GET /users/me` continúa
+dependiendo exclusivamente del bearer.
+
+La cookie usa `HttpOnly`, `Secure` según entorno, `SameSite` explícito, dominio
+host-only por defecto y ruta `/api/v1/auth`. CORS admite credenciales solo para
+orígenes explícitos. Refresh y logout exigen un `Origin` confiable como control
+CSRF; el login permite omitirlo únicamente para preservar clientes OAuth2 no
+navegador.
+
+Recuperación, verificación de correo, MFA, login social y gestión visual de
+dispositivos no están implementados.
 
 ## Autorización
 
@@ -166,8 +187,6 @@ Estas rutas son conceptuales y no representan una implementación existente.
 
 ## Decisiones pendientes
 
-- Definir renovación, revocación, almacenamiento del cliente y gestión
-  avanzada de sesión sobre la base acotada de ADR-005.
 - Determinar si los recursos serán paginados por cursor o por offset.
 - Formalizar los límites de rate limiting y los requisitos de trazabilidad.
 - Decidir el formato definitivo de errores y de respuestas comunes.

@@ -42,6 +42,14 @@
   repetibles sobre una base PostgreSQL específica de test.
 - Configuración JWT tipada, generación segura del secreto local y ejecución de
   la integración de autenticación en el job `PostgreSQL integration`.
+- Gestión de sesión web renovable con refresh token opaco en cookie `HttpOnly`,
+  digest exclusivo en PostgreSQL, rotación atómica y logout revocable.
+- Interfaz React mínima de login, restauración y cierre de sesión, con access
+  token conservado únicamente en memoria.
+- Protección CSRF mediante orígenes explícitos, CORS con credenciales y
+  configuración de cookie validada por entorno.
+- Migración reversible de `auth_sessions` y cobertura unitaria, frontend y de
+  integración PostgreSQL, incluida la renovación concurrente.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.
