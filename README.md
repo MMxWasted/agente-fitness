@@ -8,17 +8,24 @@ artificial.
 
 La Fase 1 de documentación fundacional está finalizada. La Fase 2 se encuentra
 en progreso y ya dispone de una fundación técnica mínima: frontend React con
-TypeScript, backend FastAPI, endpoint `GET /health` y una página inicial que
-comprueba el estado de la API.
+TypeScript, backend FastAPI, PostgreSQL local mediante Docker Compose,
+SQLAlchemy, Alembic, endpoints `GET /health` y `GET /ready`, y una página
+inicial que comprueba el estado de la API.
 
-PostgreSQL, Docker Compose, Alembic, integración continua y el resto de la
-infraestructura de la Fase 2 siguen pendientes.
+La persistencia aún no contiene modelos de negocio. La integración continua,
+la contenedorización de las aplicaciones y el resto de la infraestructura de la
+Fase 2 siguen pendientes.
 
 ## Inicio rápido
 
 ```powershell
+Copy-Item .env.example .env
+Copy-Item backend\.env.example backend\.env
+docker compose up -d postgres
+
 Set-Location backend
 uv sync
+uv run alembic upgrade head
 uv run uvicorn app.main:app --reload
 ```
 
@@ -32,8 +39,9 @@ npm.cmd run dev
 ```
 
 Consulta la [configuración completa](docs/development/setup.md) y los
-[comandos de pruebas](docs/development/testing.md) antes de trabajar en el
-entorno.
+[comandos de pruebas](docs/development/testing.md). Las operaciones y
+decisiones de persistencia están en la
+[guía de base de datos](docs/development/database.md).
 
 ## Objetivo general
 
@@ -75,6 +83,7 @@ Construir una base sólida para un producto de seguimiento fitness, analítica d
 - [Contributing](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 - [Configuración del entorno](docs/development/setup.md)
+- [Base de datos local](docs/development/database.md)
 - [Pruebas y verificaciones](docs/development/testing.md)
 - [Workflow de Git y colaboración](docs/development/git-workflow.md)
 - [Definición de done](docs/development/definition-of-done.md)
@@ -82,5 +91,6 @@ Construir una base sólida para un producto de seguimiento fitness, analítica d
 ## Aviso importante
 
 La aplicación disponible es únicamente una fundación técnica sin funcionalidad
-fitness, autenticación, persistencia ni agente de inteligencia artificial. No
-existe todavía un entorno completo de base de datos, contenedores o despliegue.
+fitness, autenticación, modelos de negocio ni agente de inteligencia
+artificial. Docker Compose administra únicamente PostgreSQL local; todavía no
+existe contenedorización completa ni despliegue de producción.

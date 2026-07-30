@@ -11,6 +11,15 @@
 - Página inicial mínima con estados de comprobación, disponibilidad y error de la API.
 - Herramientas iniciales de linting, tipos y pruebas para frontend y backend.
 - Documentación reproducible de configuración y verificaciones del entorno.
+- PostgreSQL local mediante Docker Compose, con volumen persistente y
+  comprobación de salud.
+- Configuración tipada de `DATABASE_URL` e infraestructura síncrona mínima de
+  SQLAlchemy con Psycopg.
+- Línea base técnica de Alembic sin tablas de negocio.
+- Endpoint de readiness `GET /ready` con contratos 200 y 503 controlados.
+- Pruebas unitarias de configuración, ciclo de sesión y disponibilidad de la
+  base sin depender de PostgreSQL externo.
+- Documentación reproducible de operaciones y migraciones de la base local.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.
