@@ -413,6 +413,7 @@ backend y la infraestructura de producción siguen fuera de este bloque. El
 recorrido local completo de 2B.3 fue validado correctamente. La validación
 remota de 3A.1 también finalizó correctamente en el pull request #6 mediante
 los jobs `Frontend`, `Backend quality` y `PostgreSQL integration`. La sesión
-web renovable de 3A.2 está disponible y validada localmente; proveedores de
-identidad externos, perfil fitness y demás datos de negocio pertenecen a
-bloques posteriores.
+web renovable de 3A.2 fue validada localmente y por esos mismos tres jobs en el
+pull request #8, ya fusionado en `main`; no queda validación remota pendiente
+para el bloque. Proveedores de identidad externos, perfil fitness y demás
+datos de negocio pertenecen a bloques posteriores.
