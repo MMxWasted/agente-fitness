@@ -1,0 +1,1 @@
+"""Agente Fitness backend application."""

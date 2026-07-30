@@ -48,23 +48,23 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
 
 ## Fase 2. Fundación técnica
 
-- Estado: [ ] Pendiente
+- Estado: [~] En progreso
 - Objetivo: preparar la base técnica del proyecto sin asumir una implementación funcional completa.
 - Entregables: estructura real del monorepo, frontend React con TypeScript, backend FastAPI, PostgreSQL, Docker Compose, Alembic, variables de entorno, linting, tipos y pruebas, GitHub Actions, endpoint GET /health, página inicial mínima y arranque reproducible documentado.
 - Dependencias: fase 1.
 - Criterios de finalización: el equipo puede iniciar el desarrollo con un entorno reproducible y una visión clara de la arquitectura.
 - Tareas:
-  - [ ] Crear la estructura real del monorepo.
-  - [ ] Inicializar frontend React con TypeScript.
-  - [ ] Inicializar backend FastAPI.
+  - [x] Crear la estructura real del monorepo.
+  - [x] Inicializar frontend React con TypeScript.
+  - [x] Inicializar backend FastAPI.
   - [ ] Configurar PostgreSQL.
   - [ ] Configurar Docker Compose.
   - [ ] Configurar Alembic.
-  - [ ] Configurar variables de entorno.
-  - [ ] Configurar linting, tipos y pruebas.
+  - [x] Configurar variables de entorno.
+  - [x] Configurar linting, tipos y pruebas.
   - [ ] Configurar GitHub Actions.
-  - [ ] Implementar GET /health.
-  - [ ] Crear una página inicial mínima que compruebe el estado de la API.
+  - [x] Implementar GET /health.
+  - [x] Crear una página inicial mínima que compruebe el estado de la API.
   - [ ] Documentar y verificar el arranque reproducible.
 
 ## Fase 3. Autenticación y perfil

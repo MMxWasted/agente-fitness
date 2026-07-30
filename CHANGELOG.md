@@ -4,6 +4,13 @@
 
 ### Added
 
+- Estructura inicial del monorepo con áreas independientes para frontend y backend.
+- Frontend React con TypeScript generado desde la plantilla oficial de Vite.
+- Backend FastAPI administrado mediante uv.
+- Endpoint de salud `GET /health` con respuesta tipada.
+- Página inicial mínima con estados de comprobación, disponibilidad y error de la API.
+- Herramientas iniciales de linting, tipos y pruebas para frontend y backend.
+- Documentación reproducible de configuración y verificaciones del entorno.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.
