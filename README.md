@@ -6,17 +6,16 @@ artificial.
 
 ## Estado actual
 
-La Fase 1 de documentación fundacional está finalizada. La Fase 2 se encuentra
-en progreso y ya dispone de una fundación técnica mínima: frontend React con
-TypeScript, backend FastAPI, PostgreSQL local mediante Docker Compose,
-SQLAlchemy, Alembic, endpoints `GET /health` y `GET /ready`, y una página
-inicial que comprueba el estado de la API.
+Las fases 1 y 2 están finalizadas. La Fase 3 está en progreso y su primer
+bloque incorpora identidad de usuario y autenticación backend: registro por
+correo, contraseña protegida con Argon2id, access tokens JWT y consulta de la
+cuenta actual. PostgreSQL, Alembic, los endpoints `GET /health` y `GET /ready`
+y el frontend técnico de React continúan formando la base del sistema.
 
-La persistencia aún no contiene modelos de negocio. La integración continua
-fue validada correctamente en GitHub con sus tres jobs. El repositorio también
-dispone de scripts PowerShell para preparar, iniciar, comprobar y detener el
-entorno local sin Dockerizar frontend ni backend. La validación local completa
-de esos scripts sigue pendiente en un equipo con Docker.
+La integración continua mantiene tres jobs independientes y añade pruebas
+reales de autenticación contra un PostgreSQL efímero. Los scripts PowerShell
+preparan, inician, comprueban y detienen el entorno local sin Dockerizar
+frontend ni backend; su recorrido completo con Docker ya fue validado.
 
 ## Inicio rápido
 
@@ -91,9 +90,10 @@ Construir una base sólida para un producto de seguimiento fitness, analítica d
 
 ## Aviso importante
 
-La aplicación disponible es únicamente una fundación técnica sin funcionalidad
-fitness, autenticación, modelos de negocio ni agente de inteligencia
-artificial. Docker Compose administra únicamente PostgreSQL local; todavía no
-existe contenedorización completa ni despliegue de producción. Los scripts
-locales ejecutan FastAPI y Vite como procesos del host registrados de forma
-explícita.
+La aplicación disponible incorpora únicamente la cuenta técnica y la
+autenticación del backend. Todavía no existen interfaz de registro o login,
+gestión de tokens en el navegador, perfil fitness, rutinas, entrenamientos,
+métricas ni Agente Fitness. Docker Compose administra únicamente PostgreSQL
+local; no existe contenedorización completa ni despliegue de producción. Los
+scripts locales ejecutan FastAPI y Vite como procesos del host registrados de
+forma explícita.

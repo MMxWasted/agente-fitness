@@ -2,4 +2,4 @@ from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
-    """Declarative base for future persistence models."""
+    """Declarative base for application persistence models."""

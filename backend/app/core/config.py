@@ -1,9 +1,11 @@
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, Self
 from urllib.parse import urlsplit
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+DEVELOPMENT_JWT_SECRET = "local-development-only-replace-with-at-least-32-random-bytes"
 
 
 class Settings(BaseSettings):
@@ -24,6 +26,9 @@ class Settings(BaseSettings):
         "@localhost:5432/agente_fitness"
     )
     database_connect_timeout_seconds: int = Field(default=3, ge=1, le=30)
+    jwt_secret_key: SecretStr = Field()
+    jwt_algorithm: Literal["HS256"] = "HS256"
+    access_token_expire_minutes: int = Field(default=30, ge=5, le=1440)
 
     @field_validator("database_url")
     @classmethod
@@ -49,7 +54,28 @@ class Settings(BaseSettings):
 
         return value
 
+    @field_validator("jwt_secret_key")
+    @classmethod
+    def validate_jwt_secret_key(cls, value: SecretStr) -> SecretStr:
+        if len(value.get_secret_value().encode("utf-8")) < 32:
+            raise ValueError("JWT_SECRET_KEY must contain at least 32 bytes")
+
+        return value
+
+    @model_validator(mode="after")
+    def reject_development_secret_in_production(self) -> Self:
+        if (
+            self.environment == "production"
+            and self.jwt_secret_key.get_secret_value() == DEVELOPMENT_JWT_SECRET
+        ):
+            raise ValueError(
+                "JWT_SECRET_KEY must be replaced outside local development"
+            )
+
+        return self
+
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    # BaseSettings supplies this required field from JWT_SECRET_KEY at runtime.
+    return Settings()  # type: ignore[call-arg]

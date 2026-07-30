@@ -115,6 +115,8 @@ $null = Copy-DevEnvFileIfMissing `
 $null = Copy-DevEnvFileIfMissing `
     -ExamplePath (Join-Path $repositoryRoot 'backend\.env.example') `
     -DestinationPath (Join-Path $repositoryRoot 'backend\.env')
+$null = Initialize-DevJwtSecret `
+    -Path (Join-Path $repositoryRoot 'backend\.env')
 
 Assert-DevEnvironmentFiles
 
@@ -130,5 +132,5 @@ Invoke-DevCommand `
     -Arguments @('sync', '--locked') `
     -WorkingDirectory (Join-Path $repositoryRoot 'backend')
 
-Write-Host 'Preparación completada sin sobrescribir archivos de entorno existentes.'
+Write-Host 'Preparación completada conservando la configuración local existente.'
 Write-Host 'Revisa .env, frontend\.env y backend\.env antes de iniciar si cambiaste puertos o credenciales.'

@@ -539,6 +539,10 @@ El modelo definitivo deberá validarse antes de crear las primeras migraciones.
 * `updated_at`
 * `deleted_at`
 
+Estado de 3A.1: la identidad técnica implementa todos los campos anteriores
+salvo `deleted_at`; el borrado lógico continúa aplazado y no forma parte de la
+primera migración de usuarios.
+
 ### 9.2 UserProfile
 
 * `id`

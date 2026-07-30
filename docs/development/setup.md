@@ -2,10 +2,10 @@
 
 ## Alcance
 
-Esta guía cubre la fundación técnica disponible hasta el bloque 2B.3:
-frontend React con TypeScript, backend FastAPI, PostgreSQL local mediante
-Docker Compose y scripts PowerShell para orquestar el entorno. La persistencia
-incluida es únicamente técnica; todavía no existen modelos ni datos de negocio.
+Esta guía cubre la fundación técnica y el bloque 3A.1: frontend React con
+TypeScript, backend FastAPI, PostgreSQL local mediante Docker Compose, scripts
+PowerShell e identidad de usuario con autenticación bearer. La única entidad
+persistida es la cuenta técnica; todavía no existen datos fitness.
 
 ## Requisitos
 
@@ -45,9 +45,11 @@ Desde la raíz del repositorio:
 ```
 
 El script comprueba Git, Docker, Docker Compose, Node.js, npm y uv. Después crea
-los archivos `.env` que falten sin sobrescribir los existentes, ejecuta
-`npm.cmd ci` y sincroniza el backend con `uv sync --locked`. No instala
-herramientas globales ni modifica lockfiles.
+los archivos `.env` que falten, genera criptográficamente
+`JWT_SECRET_KEY` si falta o conserva el marcador público del ejemplo, ejecuta
+`npm.cmd ci` y sincroniza el backend con `uv sync --locked`. Conserva las demás
+variables existentes, no muestra el secreto, no instala herramientas globales
+ni modifica lockfiles.
 
 Si la política local impide ejecutar archivos `.ps1`, usa un proceso aislado
 sin cambiar la política del sistema:
@@ -119,6 +121,16 @@ El backend utiliza:
 - `DATABASE_URL`: URL completa con esquema `postgresql+psycopg`.
 - `DATABASE_CONNECT_TIMEOUT_SECONDS`: espera máxima inicial por PostgreSQL,
   entre 1 y 30 segundos.
+- `JWT_SECRET_KEY`: secreto de firma con un mínimo de 32 bytes. El ejemplo es
+  únicamente un marcador local y `setup-dev.ps1` lo sustituye por un valor
+  aleatorio en `backend\.env`.
+- `JWT_ALGORITHM`: algoritmo permitido; en esta fase solo se admite `HS256`.
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: vigencia del access token, 30 minutos por
+  defecto y entre 5 y 1440.
+
+El entorno `production` rechaza explícitamente el marcador local documentado.
+No reutilices el secreto de desarrollo en otro entorno ni lo incluyas en
+comandos, logs o documentación.
 
 Si cambias usuario, contraseña, puerto o nombre de base en el `.env` de la
 raíz, actualiza de forma coherente `DATABASE_URL` en `backend\.env`. No uses
@@ -187,8 +199,8 @@ uv run alembic current
 Set-Location ..
 ```
 
-La revisión inicial es una línea base técnica vacía. Alembic administra su
-tabla de versión, pero todavía no crea tablas de negocio.
+La revisión inicial conserva la línea base técnica vacía. La revisión
+`20260730_0002` crea exclusivamente la tabla `users` y sus restricciones.
 
 ## Inicio manual del backend
 
@@ -213,12 +225,21 @@ npm.cmd run dev -- --host 127.0.0.1
 - Aplicación: `http://localhost:5173`
 - Liveness de la API: `http://localhost:8000/health`
 - Readiness de la API: `http://localhost:8000/ready`
+- Registro: `POST http://localhost:8000/api/v1/auth/register`
+- Access token: `POST http://localhost:8000/api/v1/auth/token`
+- Usuario actual: `GET http://localhost:8000/api/v1/users/me`
 - OpenAPI interactivo: `http://localhost:8000/docs`
 - Esquema OpenAPI: `http://localhost:8000/openapi.json`
 
 `GET /health` confirma que el proceso FastAPI responde y no consulta la base.
 `GET /ready` ejecuta `SELECT 1`: devuelve 200 cuando PostgreSQL responde y 503
 con un contrato controlado cuando no está disponible.
+
+El registro recibe JSON. El endpoint de token recibe formulario OAuth2:
+`username` es el campo técnico que contiene el correo. Las contraseñas admiten
+entre 15 y 128 caracteres, sin reglas arbitrarias de composición. El access
+token se usa en el encabezado `Authorization: Bearer`; no se almacena todavía
+en el frontend.
 
 ## Detener el entorno
 
@@ -284,6 +305,13 @@ El script de arranque muestra automáticamente `docker compose ps` y las última
 Confirma que el contenedor está healthy, que se aplicaron las migraciones y que
 `backend\.env` contiene una `DATABASE_URL` coherente con el `.env` de la raíz.
 El 503 no afecta al contrato de liveness de `/health`.
+
+### El backend indica que falta `JWT_SECRET_KEY`
+
+Vuelve a ejecutar `.\scripts\setup-dev.ps1`. En un `backend\.env` anterior a
+3A.1, el script añade un secreto local aleatorio sin mostrarlo ni cambiar la
+URL de PostgreSQL. Si configuras el backend manualmente, define un valor de al
+menos 32 bytes y no uses el marcador local en producción.
 
 ### PowerShell bloquea npm.ps1
 
@@ -353,4 +381,5 @@ la parada normal.
 Docker Compose solo administra PostgreSQL local. Los contenedores de frontend y
 backend y la infraestructura de producción siguen fuera de este bloque. El
 workflow `CI` y el recorrido local completo de 2B.3 fueron validados
-correctamente.
+correctamente. Refresh tokens, revocación, cookies, gestión de sesión en
+frontend y proveedores de identidad pertenecen a bloques posteriores.

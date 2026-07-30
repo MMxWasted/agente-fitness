@@ -49,7 +49,13 @@ Las pruebas automatizadas cubren:
 - readiness disponible y no disponible mediante sesiones simuladas;
 - contrato 200/503 sin filtrar detalles internos;
 - validación y enmascarado de `DATABASE_URL`;
-- cierre de la sesión entregada por la dependencia.
+- cierre de la sesión entregada por la dependencia;
+- normalización de correo, duplicados y condición de carrera;
+- creación y verificación de hashes Argon2id;
+- emisión y validación de JWT, incluida expiración, firma y claims;
+- configuración y enmascarado del secreto;
+- registro, login, usuario actual y errores genéricos sin exponer el hash;
+- tokens ausentes, inválidos o de identidades inexistentes e inactivas.
 
 La suite no necesita Docker ni un PostgreSQL externo.
 
@@ -74,6 +80,7 @@ Estas pruebas usan un directorio temporal aislado y cubren:
 
 - creación de un `.env` inexistente;
 - conservación de un `.env` existente;
+- generación criptográfica y conservación posterior del secreto JWT local;
 - lectura de variables y valores entre comillas;
 - valores predeterminados y validación de puertos;
 - citado de argumentos y rechazo de metacaracteres del shell;
@@ -111,41 +118,121 @@ if ($failed) {
 
 ## Integración local con PostgreSQL
 
-Esta verificación sí requiere Docker y parte de archivos `.env` locales
-coherentes:
+Estas pruebas usan PostgreSQL real, pero rechazan la base local normal. El
+nombre de la base debe terminar en `_test` o `_ci`. Inicia el contenedor y crea
+una base de test separada, de forma idempotente:
 
 ```powershell
 docker compose --env-file .env.example config --quiet
 docker compose up -d postgres
 docker compose ps
 
+$postgresUser = (
+    docker compose exec -T postgres printenv POSTGRES_USER
+).Trim()
+$testDatabase = 'agente_fitness_test'
+$exists = (
+    docker compose exec -T postgres psql `
+        -U $postgresUser `
+        -d postgres `
+        -tAc "SELECT 1 FROM pg_database WHERE datname='$testDatabase'"
+).Trim()
+if ($exists -ne '1') {
+    docker compose exec -T postgres createdb `
+        -U $postgresUser `
+        $testDatabase
+}
+```
+
+Exporta una configuración exclusiva de test. Esta URL usa los valores públicos
+de `.env.example`; si cambiaste las credenciales o el puerto local, adapta solo
+esta variable:
+
+```powershell
+$env:ENVIRONMENT = 'test'
+$env:DATABASE_URL = (
+    'postgresql+psycopg://agente_fitness:change_me_local_only' +
+    '@localhost:5432/agente_fitness_test'
+)
+$env:JWT_SECRET_KEY = (
+    'integration-test-only-secret-that-is-at-least-32-bytes'
+)
+
 Set-Location backend
 uv run alembic upgrade head
-uv run alembic current --check-heads
-uv run alembic downgrade base
+uv run alembic current
+uv run alembic downgrade -1
 uv run alembic upgrade head
-uv run alembic current --check-heads
+uv run alembic current
+uv run pytest integration_tests -m integration
+```
+
+La suite crea correos únicos, elimina exclusivamente sus propios usuarios y
+comprueba el esquema PostgreSQL, la revisión Alembic, registro, persistencia,
+hash, duplicado, login, `/users/me`, cuentas inactivas, tokens inválidos y los
+contratos de `/health` y `/ready`.
+
+Para el recorrido HTTP manual, conserva esas variables y ejecuta en una
+terminal:
+
+```powershell
 uv run uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Con Uvicorn activo, usa otra terminal:
+En otra terminal con la misma configuración:
 
 ```powershell
-$health = Invoke-WebRequest http://127.0.0.1:8000/health
-$ready = Invoke-WebRequest http://127.0.0.1:8000/ready
+$baseUrl = 'http://127.0.0.1:8000'
+$email = "manual-$([guid]::NewGuid().ToString('N'))@example.com"
+$passwordBytes = New-Object byte[] 32
+$passwordGenerator = (
+    [System.Security.Cryptography.RandomNumberGenerator]::Create()
+)
+try {
+    $passwordGenerator.GetBytes($passwordBytes)
+}
+finally {
+    $passwordGenerator.Dispose()
+}
+$password = [Convert]::ToBase64String($passwordBytes)
+$registration = @{
+    email = $email
+    password = $password
+} | ConvertTo-Json
 
-$health.StatusCode
-$health.Content
-$ready.StatusCode
-$ready.Content
+$registered = Invoke-RestMethod `
+    -Method Post `
+    -Uri "$baseUrl/api/v1/auth/register" `
+    -ContentType 'application/json' `
+    -Body $registration
+
+$tokenResponse = Invoke-RestMethod `
+    -Method Post `
+    -Uri "$baseUrl/api/v1/auth/token" `
+    -ContentType 'application/x-www-form-urlencoded' `
+    -Body @{ username = $email; password = $password }
+
+$currentUser = Invoke-RestMethod `
+    -Method Get `
+    -Uri "$baseUrl/api/v1/users/me" `
+    -Headers @{ Authorization = "Bearer $($tokenResponse.access_token)" }
+
+$registered
+$currentUser
 ```
 
-Ambas rutas deben devolver 200; sus cuerpos deben ser `{"status":"ok"}` y
-`{"status":"ready"}`. Detén Uvicorn con `Ctrl+C` y conserva el volumen al
-detener la infraestructura:
+No escribas `$tokenResponse` completo en consola. Repite el registro para
+obtener 409 y prueba una contraseña o token incorrectos para obtener 401. Las
+respuestas públicas no deben contener `password` ni `password_hash`.
+
+Detén Uvicorn con `Ctrl+C`, elimina las variables del proceso y conserva el
+volumen al detener la infraestructura:
 
 ```powershell
 Set-Location ..
+Remove-Item Env:ENVIRONMENT
+Remove-Item Env:DATABASE_URL
+Remove-Item Env:JWT_SECRET_KEY
 docker compose down
 ```
 
@@ -182,12 +269,12 @@ proyecto.
 | --- | --- | --- |
 | `Frontend` | Instalación bloqueada, lint, tipos, tests y build | Comandos de [Frontend](#frontend) |
 | `Backend quality` | Sincronización bloqueada, Ruff, formato, mypy y pytest | Comandos de [Backend](#backend) |
-| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
+| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación real, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
 
-Los tres jobs se ejecutaron correctamente en GitHub. Sus nombres definitivos
-son `Frontend`, `Backend quality` y `PostgreSQL integration`. El tercero validó
-la conexión real con PostgreSQL, el ciclo reversible de Alembic y los contratos
-200 de `/health` y `/ready` mediante un service container.
+Los tres jobs mantienen los nombres `Frontend`, `Backend quality` y
+`PostgreSQL integration`. La fundación 2B ya fue validada en GitHub. Los
+cambios de 3A.1 añaden al tercero la suite real de usuarios y autenticación;
+esa ejecución remota debe confirmarse en el pull request antes de integrar.
 
 El job de integración usa `postgres:18.4` como service container. La base,
 usuario y contraseña se definen como valores efímeros exclusivos de CI y no
@@ -195,7 +282,8 @@ proceden de secretos personales. La `DATABASE_URL` solo existe en ese job.
 Compose se valida sin imprimir su configuración resuelta.
 
 El ciclo de migraciones aplica `head`, comprueba que la base esté en todas las
-revisiones head, baja hasta `base` y vuelve a aplicar `head`. Después se inicia
+revisiones head, baja hasta `base` y vuelve a aplicar `head`. A continuación
+ejecuta las pruebas PostgreSQL con una base efímera `_ci`. Después se inicia
 Uvicorn de forma temporal, se esperan respuestas con reintentos acotados y se
 comprueban exactamente estos contratos:
 
@@ -314,3 +402,46 @@ La validación local completa de 2B.3 finalizó correctamente. Se comprobaron:
 
 La parada final y su repetición no dejaron listeners en los puertos 8000 o
 5173 ni archivos PID gestionados activos.
+
+## Verificación completa del bloque 3A.1
+
+Ejecuta los comandos del bloque base y añade la base PostgreSQL específica de
+test descrita en [Integración local con PostgreSQL](#integración-local-con-postgresql):
+
+```powershell
+Set-Location .
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-dev-scripts.ps1
+
+Set-Location frontend
+npm.cmd ci
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run test
+npm.cmd run build
+
+Set-Location ..\backend
+uv sync --locked
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy app tests
+uv run pytest
+
+# Con ENVIRONMENT, DATABASE_URL de test y JWT_SECRET_KEY definidos:
+uv run alembic upgrade head
+uv run alembic current
+uv run alembic downgrade -1
+uv run alembic upgrade head
+uv run alembic current
+uv run pytest integration_tests -m integration
+
+Set-Location ..
+docker compose --env-file .env.example config
+git status
+git diff --stat
+git diff --check
+```
+
+La verificación manual adicional debe recorrer registro 201, duplicado 409,
+login correcto, credenciales incorrectas 401, `/users/me` correcto, petición
+sin token, token inválido y ausencia de `password_hash`. El entorno se detiene
+con `.\scripts\stop-dev.ps1`; la parada normal conserva el volumen PostgreSQL.

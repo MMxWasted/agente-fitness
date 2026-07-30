@@ -19,7 +19,7 @@ Un Architecture Decision Record (ADR) documenta una decisión arquitectónica re
 | ADR-002 | PostgreSQL como base de datos relacional | Accepted | [ADR-002](ADR-002-postgresql.md) |
 | ADR-003 | Un único agente inicialmente | Accepted | [ADR-003](ADR-003-single-agent-first.md) |
 | ADR-004 | Métricas deterministas separadas de la inteligencia artificial | Accepted | [ADR-004](ADR-004-deterministic-metrics.md) |
-| ADR-005 | Estrategia de autenticación | Proposed | [ADR-005](ADR-005-authentication-strategy.md) |
+| ADR-005 | Estrategia de autenticación | Accepted | [ADR-005](ADR-005-authentication-strategy.md) |
 | ADR-006 | Versionado de rutinas | Proposed | [ADR-006](ADR-006-routine-versioning.md) |
 | ADR-007 | Preservación de datos históricos | Accepted | [ADR-007](ADR-007-historical-data-preservation.md) |
 | ADR-008 | Confirmaciones para acciones sensibles del agente | Accepted | [ADR-008](ADR-008-agent-confirmations.md) |

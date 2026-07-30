@@ -3,8 +3,8 @@
 ## Alcance
 
 El bloque 2B.1 incorpora PostgreSQL local, conexión con SQLAlchemy 2 y
-migraciones Alembic. Esta base permite verificar la infraestructura sin
-introducir entidades, repositorios ni lógica de negocio.
+migraciones Alembic. El bloque 3A.1 añade la primera entidad persistida:
+exclusivamente la identidad técnica `User`, sin perfil ni datos fitness.
 
 ## Decisiones de implementación
 
@@ -25,8 +25,10 @@ introducir entidades, repositorios ni lógica de negocio.
 - La dependencia FastAPI entrega una sesión por solicitud y siempre la cierra.
 - Alembic comparte `DATABASE_URL` y `Base.metadata` con la aplicación.
 
-La revisión inicial es deliberadamente vacía. Solo establece la línea base de
-migraciones y no simula tablas futuras.
+La revisión inicial es deliberadamente vacía y conserva la línea base técnica.
+La revisión `20260730_0002` crea `users` con UUID, correo único, hash de
+contraseña, estado y timestamps con zona horaria. Es reversible a la revisión
+anterior y no crea datos semilla.
 
 ## Contratos de diagnóstico
 
@@ -116,15 +118,15 @@ Los resultados esperados son 200 con `{"status":"ok"}` y 200 con
 `{"status":"ready"}`. Al detener PostgreSQL, `/health` debe seguir devolviendo
 200 y `/ready` debe devolver 503 con `{"status":"unavailable"}`.
 
-El job `PostgreSQL integration` se ejecutó correctamente en GitHub y validó
-PostgreSQL real, las migraciones reversibles y ambos contratos mediante un
-service container. El recorrido local de los scripts 2B.3 no pudo ejecutarse
-en el entorno de implementación porque el binario `docker` no estaba
-disponible; debe completarse en un equipo con Docker antes de marcar ese bloque
-como finalizado.
+El job `PostgreSQL integration` validó la fundación con PostgreSQL real,
+migraciones reversibles y ambos contratos mediante un service container. En
+3A.1 también ejecuta la suite de usuarios y autenticación sobre la base
+efímera de CI. El recorrido local completo de los scripts 2B.3 fue validado con
+Docker.
 
 ## Límites actuales
 
-No existen modelos de negocio, repositorios, seeds, autenticación ni acceso a
-datos desde el frontend o el Agente Fitness. Tampoco se define una topología de
-producción: esas decisiones pertenecen a bloques posteriores.
+Solo existen el modelo, repositorio y servicio necesarios para identidad y
+autenticación. No existen perfil, entidades fitness, seeds, acceso desde el
+frontend ni Agente Fitness. Tampoco se define una topología de producción:
+esas decisiones pertenecen a bloques posteriores.

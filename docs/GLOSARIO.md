@@ -133,3 +133,22 @@ Una herramienta del agente es una capacidad controlada que permite al agente con
 ## Cálculo determinista
 
 Un cálculo determinista es un proceso de transformación de datos que produce un resultado repetible a partir de entradas conocidas. Se utilizará como principio base para las métricas importantes del producto.
+
+## Access token
+
+Un access token es una credencial temporal presentada como bearer para
+identificar una petición autenticada. En la fase actual es un JWT firmado,
+contiene el UUID del usuario como sujeto y tiene caducidad; no equivale a una
+sesión renovable.
+
+## JWT
+
+JWT es el formato compacto usado para el access token. Sus claims mínimos son
+`sub`, `iat` y `exp`; el backend valida firma, algoritmo permitido, identidad y
+caducidad antes de confiar en él.
+
+## Argon2id
+
+Argon2id es el algoritmo de hashing de contraseñas utilizado por el backend. El
+hash incorpora salt y parámetros de coste administrados por `pwdlib`; no es
+cifrado reversible ni contiene la contraseña.

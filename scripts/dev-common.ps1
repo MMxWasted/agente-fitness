@@ -303,6 +303,56 @@ function Copy-DevEnvFileIfMissing {
     return $true
 }
 
+function Initialize-DevJwtSecret {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $values = Read-DevEnvFile -Path $Path
+    $developmentPlaceholder = (
+        'local-development-only-replace-with-at-least-32-random-bytes'
+    )
+    if (
+        $values.ContainsKey('JWT_SECRET_KEY') -and
+        -not [string]::IsNullOrWhiteSpace($values['JWT_SECRET_KEY']) -and
+        $values['JWT_SECRET_KEY'] -ne $developmentPlaceholder
+    ) {
+        Write-Host "Se conserva el secreto JWT local existente: $Path"
+        return $false
+    }
+
+    $secretBytes = New-Object byte[] 48
+    $generator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    try {
+        $generator.GetBytes($secretBytes)
+    }
+    finally {
+        $generator.Dispose()
+    }
+    $secret = [Convert]::ToBase64String($secretBytes)
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $replaced = $false
+    foreach ($line in Get-Content -LiteralPath $Path -Encoding utf8) {
+        if ($line -match '^JWT_SECRET_KEY=') {
+            $lines.Add("JWT_SECRET_KEY=$secret")
+            $replaced = $true
+        }
+        else {
+            $lines.Add($line)
+        }
+    }
+    if (-not $replaced) {
+        $lines.Add("JWT_SECRET_KEY=$secret")
+    }
+
+    $utf8WithoutBom = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllLines($Path, $lines, $utf8WithoutBom)
+    Write-Host "Se generó un secreto JWT exclusivo para el entorno local: $Path"
+    return $true
+}
+
 function Assert-DevEnvironmentFiles {
     $requiredFiles = @(
         (Join-Path $script:DevRepositoryRoot '.env'),
@@ -330,7 +380,8 @@ function Assert-DevEnvironmentFiles {
         [pscustomobject]@{ Values = $rootValues; Key = 'POSTGRES_USER'; File = '.env' },
         [pscustomobject]@{ Values = $rootValues; Key = 'POSTGRES_PASSWORD'; File = '.env' },
         [pscustomobject]@{ Values = $frontendValues; Key = 'VITE_API_BASE_URL'; File = 'frontend\.env' },
-        [pscustomobject]@{ Values = $backendValues; Key = 'DATABASE_URL'; File = 'backend\.env' }
+        [pscustomobject]@{ Values = $backendValues; Key = 'DATABASE_URL'; File = 'backend\.env' },
+        [pscustomobject]@{ Values = $backendValues; Key = 'JWT_SECRET_KEY'; File = 'backend\.env' }
     )
 
     foreach ($requiredValue in $requiredValues) {
