@@ -1,64 +1,109 @@
 # ADR-005 — Estrategia de autenticación
 
 - Identificador: `ADR-005`
-- Estado: `Proposed`
+- Estado: `Accepted`
 
 ## Contexto
 
-El producto necesita identificar al usuario y proteger datos privados desde el backend. Todavía no se ha definido el mecanismo concreto de sesión, renovación y revocación. La elección debe servir a una experiencia web mobile-first y considerar una posible aplicación móvil futura.
+El backend necesita identificar al usuario antes de incorporar recursos
+privados. El bloque 3A.1 solo requiere una identidad técnica y un access token
+para clientes de la API; la interfaz web, la persistencia de sesión en el
+navegador y el ciclo de renovación pertenecen a bloques posteriores.
 
 ## Fuerzas o criterios de decisión
 
-- Seguridad de credenciales y tokens.
-- Experiencia web y persistencia de sesión.
-- Revocación, expiración y renovación.
-- Protección frente a CSRF y robo de tokens.
-- Complejidad de implementación y operación.
-- Topología de despliegue.
-- Compatibilidad futura con clientes móviles.
+- Protección de credenciales, secretos y tokens.
+- Contrato estándar y documentable mediante FastAPI y OpenAPI.
+- Identidad estable independiente del correo.
+- Caducidad acotada y configuración tipada.
+- Implementación mínima compatible con clientes web y móviles futuros.
+- Separación entre autenticación, autorización por propietario y gestión de
+  sesión avanzada.
 
-## Decisión propuesta
+## Decisión
 
-No se selecciona todavía una estrategia definitiva. Antes de implementar autenticación se realizará una evaluación de amenazas y se elegirá una alternativa documentando expiración, revocación, renovación, protección CSRF, almacenamiento en cliente y recuperación de cuenta. La identidad siempre procederá del contexto autenticado del backend, nunca de un `user_id` libre proporcionado por el cliente o el modelo.
+La primera versión utiliza correo normalizado y contraseña para autenticar.
+Las contraseñas se almacenan exclusivamente como hashes Argon2id generados por
+la configuración recomendada de `pwdlib`.
+
+El backend emite un access token JWT bearer firmado con HS256. El secreto se
+carga desde entorno, se representa como valor secreto y debe tener al menos 32
+bytes. El token contiene únicamente `sub`, `iat` y `exp`: `sub` es el UUID
+estable del usuario y la duración predeterminada es 30 minutos, configurable
+entre 5 minutos y 24 horas. La decodificación fija explícitamente HS256 y exige
+los tres claims.
+
+El token se presenta en `Authorization: Bearer <token>`. Cada petición
+protegida resuelve de nuevo el usuario en PostgreSQL y rechaza identidades
+inexistentes o inactivas. Nunca se acepta un `user_id` proporcionado libremente
+por el cliente para establecer la identidad.
+
+Esta decisión no define todavía refresh tokens, revocación, cierre de sesión
+servidor, cookies, almacenamiento en navegador, recuperación de cuenta,
+verificación de correo, MFA ni proveedores externos. Hasta que se diseñe el
+cliente de autenticación, el frontend no almacena tokens.
 
 ## Alternativas consideradas
 
-- **Sesión backend con cookie `HttpOnly`:** reduce exposición del token a JavaScript y encaja bien con web; requiere estrategia CSRF, almacenamiento de sesiones y afinidad con la topología de dominios.
-- **Access token y refresh token:** facilita APIs y clientes móviles; exige rotación, revocación y almacenamiento seguro.
-- **Proveedor externo de identidad:** delega capacidades maduras, pero introduce dependencia, coste, tratamiento de datos y límites de personalización.
-- **Combinación de estrategias:** puede atender web y móvil, pero aumenta complejidad y riesgo de políticas inconsistentes.
+- **Sesión backend con cookie `HttpOnly`:** reduce la exposición del token a
+  JavaScript, pero requiere decidir topología de dominios, protección CSRF y
+  almacenamiento de sesiones.
+- **Access token más refresh token:** mejora la continuidad de sesión, pero
+  exige rotación, revocación y almacenamiento seguro que no son necesarios
+  para la identidad mínima.
+- **Proveedor externo de identidad:** aporta capacidades maduras, pero añade
+  dependencia, coste y tratamiento de datos antes de que exista esa necesidad.
+- **JWT bearer de corta duración sin renovación:** cubre el contrato actual con
+  menos estado y es la opción adoptada para 3A.1.
 
 ## Consecuencias positivas
 
-- Se evita fijar un mecanismo sin conocer despliegue y clientes.
-- Los criterios de seguridad quedan explícitos antes de implementar.
-- La autorización backend permanece como invariante independiente.
+- FastAPI y OpenAPI exponen un flujo bearer estándar.
+- La identidad viaja como UUID y no duplica datos personales en el token.
+- La caducidad limita la ventana de uso de un token filtrado.
+- Argon2id permite hashes con salt y coste administrados por una biblioteca
+  mantenida.
+- La resolución contra PostgreSQL impide usar tokens de usuarios eliminados o
+  inactivos.
 
 ## Consecuencias negativas
 
-- La fase de autenticación no puede comenzar sin cerrar esta decisión.
-- Contratos y flujos de sesión permanecen abiertos.
-- Algunas decisiones de despliegue dependen de la alternativa elegida.
+- Un access token válido no puede revocarse individualmente antes de caducar.
+- No existe continuidad automática de sesión al expirar.
+- Un cliente futuro deberá decidir almacenamiento y protección del token antes
+  de implementar la interfaz.
+- HS256 requiere custodiar y rotar un secreto compartido en cada entorno.
 
 ## Riesgos
 
-- Elegir por comodidad sin modelar amenazas.
-- Almacenar tokens en lugares expuestos.
-- Omitir revocación o rotación.
-- Confundir autenticación con autorización por propietario.
+- Robo y reproducción de un token durante su vigencia.
+- Almacenamiento inseguro en el navegador si se implementa sin una decisión
+  posterior.
+- Fuerza bruta sobre login mientras no exista rate limiting.
+- Configurar en producción el marcador local o un secreto insuficiente.
 
 ## Impacto en seguridad y privacidad
 
-La alternativa deberá minimizar datos compartidos, proteger secretos, limitar intentos y evitar incluir credenciales en logs. El backend aplicará autorización a cada recurso privado. Un proveedor externo requerirá revisar finalidad, retención y transferencias de datos sin asumir cumplimiento normativo.
+Las respuestas y logs no incluyen contraseñas, hashes, secretos ni tokens
+completos. Los errores de login no distinguen entre correo inexistente y
+contraseña incorrecta. El registro puede indicar un correo duplicado porque el
+conflicto es necesario para completar ese flujo. Los datos de pruebas deben
+usar una base separada de los datos locales normales.
+
+El uso del encabezado bearer no introduce por sí mismo cookies ni protección
+CSRF; esas decisiones deberán evaluarse conjuntamente si el cliente web adopta
+cookies. Rate limiting y monitoreo de abuso quedan como endurecimiento futuro.
 
 ## Condiciones de revisión
 
-La propuesta deberá resolverse antes de implementar cuentas. Después se revisará ante nuevos clientes, cambios de dominio, incidentes, requisitos de inicio de sesión federado o limitaciones operativas de revocación y renovación.
+Revisar esta decisión antes de implementar persistencia de sesión en el
+frontend, refresh tokens, cookies, revocación, clientes móviles, recuperación
+de cuenta, proveedores externos o despliegue distribuido. Un cambio
+incompatible debe registrarse mediante un nuevo ADR que sustituya este.
 
 ## Documentos relacionados
 
 - [Diseño conceptual de la API](../architecture/api-design.md)
+- [Modelo de datos](../architecture/data-model.md)
 - [Privacidad](../safety/privacy.md)
-- [Guardrails del agente](../safety/agent-guardrails.md)
 - [ADR-012 — Estrategia de despliegue](ADR-012-deployment-strategy.md)
-

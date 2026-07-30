@@ -6,7 +6,10 @@ Documentar el modelo conceptual de dominio de Agente Fitness, manteniendo el foc
 
 ## Alcance
 
-Este documento describe las entidades y relaciones conceptuales necesarias para soporte del MVP inicial, sin fijar tipos SQL definitivos ni decisiones de implementación cerradas.
+Este documento describe las entidades y relaciones conceptuales necesarias
+para soporte del MVP inicial. Únicamente `User` está implementada en el bloque
+3A.1; el resto continúa siendo diseño futuro y no representa tablas
+existentes.
 
 ## Principios del modelo
 
@@ -52,11 +55,22 @@ erDiagram
 ### User
 
 - Propósito: representar la identidad principal del usuario del sistema.
-- Campos conceptuales principales: id, email, password_hash, created_at, updated_at, deleted_at, is_active.
+- Campos implementados: id UUID, email normalizado, password_hash, is_active,
+  created_at y updated_at.
 - Relaciones: posee un perfil como máximo, objetivos, rutinas, sesiones, medidas, conversaciones y recomendaciones.
 - Reglas de propiedad: cada usuario es propietario de sus datos privados.
-- Restricciones relevantes: correo único, cuenta activa o inactiva según estado del flujo de autenticación.
-- Ciclo de vida: creación, activación, desactivación, borrado lógico o eliminación.
+- Restricciones implementadas: clave primaria `pk_users`, correo no nulo y
+  restricción única `uq_users_email`; todos los campos son no nulos.
+- Ciclo de vida implementado: creación y activación o desactivación. No existe
+  soft delete en esta fase.
+- Privacidad: el hash solo pertenece a persistencia y nunca forma parte de un
+  esquema de salida.
+
+Los timestamps se almacenan con zona horaria y se generan en UTC. La
+normalización del correo elimina espacio exterior y aplica una comparación
+consistente sin distinguir mayúsculas. No se añadió un índice separado porque
+la restricción única de PostgreSQL ya proporciona el acceso necesario para
+login y detección de duplicados.
 
 ### UserProfile
 

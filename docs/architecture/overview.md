@@ -2,7 +2,11 @@
 
 ## Estado del documento
 
-Este documento describe la arquitectura prevista para Agente Fitness. La fundación técnica ya materializa frontend, backend y persistencia local; las capas de negocio y las decisiones futuras continúan siendo conceptuales y deberán respaldarse con ADR cuando corresponda.
+Este documento describe la arquitectura prevista para Agente Fitness. La
+fundación técnica ya materializa frontend, backend y persistencia local; el
+bloque 3A.1 añade identidad y autenticación backend. Las capas fitness y las
+decisiones futuras continúan siendo conceptuales y deberán respaldarse con ADR
+cuando corresponda.
 
 ## Objetivos arquitectónicos
 
@@ -46,7 +50,9 @@ flowchart LR
 - Frontend: propuesta de interfaz web orientada a una experiencia mobile-first.
 - Backend: propuesta de API con rutas, esquemas, servicios de dominio, repositorios y lógica de control.
 - Persistencia: PostgreSQL local con una base técnica síncrona de SQLAlchemy 2,
-  Psycopg 3 y Alembic, todavía sin modelos de negocio.
+  Psycopg 3 y Alembic; solo está materializada la cuenta técnica `User`.
+- Autenticación: correo y contraseña Argon2id con access token JWT bearer,
+  limitada al backend según ADR-005.
 - Analítica determinista: servicios independientes de cálculo de métricas.
 - Motor determinista de rutinas: lógica explícita para generar borradores de rutina.
 - Agente Fitness: un único agente orquestador con herramientas limitadas.
@@ -204,7 +210,8 @@ La arquitectura propuesta se concibe como un sistema desplegable en entorno de d
 
 - Formalizar la evolución de la base técnica actual de React, FastAPI,
   SQLAlchemy y Alembic conforme aparezcan necesidades de negocio.
-- Formalizar cómo se gestionarán autenticación, autorización y secretos.
+- Formalizar renovación, revocación y almacenamiento de sesión del cliente;
+  autorización por propietario y gestión de secretos de producción.
 - Definir la estrategia concreta de observabilidad y trazabilidad.
 - Decidir la forma exacta de integrar el OpenAI Agents SDK, si se autoriza su uso.
 - Determinar la política de despliegue y entorno de ejecución.

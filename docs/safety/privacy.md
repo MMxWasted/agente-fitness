@@ -43,7 +43,16 @@ Los datos de un usuario deben tratarse de forma aislada respecto de los demás. 
 
 ## Autenticación y autorización
 
-La autenticación y la autorización deben aplicarse en backend. La identidad del usuario debe obtenerse del contexto autenticado y no de un identificador arbitrario proporcionado por el cliente.
+La autenticación se aplica en backend mediante un access token cuyo sujeto es
+el UUID estable de la cuenta. Las rutas protegidas vuelven a resolver el
+usuario en PostgreSQL y no aceptan un identificador arbitrario proporcionado
+por el cliente. La autorización por propietario seguirá siendo obligatoria
+cuando se incorporen recursos privados.
+
+Las contraseñas solo se conservan como hashes Argon2id. Contraseñas, hashes,
+secretos JWT y tokens completos no deben incluirse en respuestas ni logs. El
+frontend todavía no implementa autenticación y no debe almacenar el token
+hasta que se decida una estrategia de sesión para el navegador.
 
 ## Logs
 
@@ -85,7 +94,10 @@ No deben almacenarse secretos en Git, en texto plano en el repositorio ni en fro
 
 ## Datos de desarrollo y demostración
 
-Los datos de desarrollo, demostración y pruebas deben separarse de los datos reales para evitar mezclas y exposición accidental.
+Los datos de desarrollo, demostración y pruebas deben separarse de los datos
+reales para evitar mezclas y exposición accidental. Las pruebas de integración
+de autenticación rechazan bases cuyo nombre no termine en `_test` o `_ci` y
+eliminan exclusivamente las cuentas que crean.
 
 ## Incidentes
 

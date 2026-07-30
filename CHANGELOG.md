@@ -32,6 +32,16 @@
   frontend, con eliminación del volumen solo mediante una opción explícita.
 - Validación local de extremo a extremo del arranque reproducible, incluidos el
   reinicio, Alembic en `head` y la persistencia del volumen PostgreSQL.
+- Modelo PostgreSQL mínimo de usuario con UUID, correo normalizado único,
+  estado activo y timestamps UTC, creado mediante una migración reversible.
+- Registro de cuenta, emisión de access tokens bearer y consulta autenticada
+  del usuario actual mediante `/api/v1`.
+- Protección de contraseñas con Argon2id y validación JWT de firma, caducidad y
+  claims obligatorios.
+- Pruebas unitarias de identidad y seguridad, junto con pruebas de integración
+  repetibles sobre una base PostgreSQL específica de test.
+- Configuración JWT tipada, generación segura del secreto local y ejecución de
+  la integración de autenticación en el job `PostgreSQL integration`.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.

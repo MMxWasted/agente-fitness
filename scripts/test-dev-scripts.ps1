@@ -58,6 +58,29 @@ try {
         -Condition ($parsedValues['PORT'] -eq '8123') `
         -Message 'Debe leer variables por nombre.'
 
+    $backendEnvPath = Join-Path $temporaryRoot 'backend.env'
+    @(
+        'JWT_SECRET_KEY=local-development-only-replace-with-at-least-32-random-bytes'
+    ) | Set-Content -LiteralPath $backendEnvPath -Encoding utf8
+    $jwtCreated = Initialize-DevJwtSecret -Path $backendEnvPath
+    $generatedValues = Read-DevEnvFile -Path $backendEnvPath
+    Assert-DevTest `
+        -Condition (
+            $jwtCreated -and
+            $generatedValues['JWT_SECRET_KEY'].Length -ge 32 -and
+            $generatedValues['JWT_SECRET_KEY'] -notmatch 'local-development'
+        ) `
+        -Message 'Debe sustituir el marcador JWT por un secreto local aleatorio.'
+    $generatedSecret = $generatedValues['JWT_SECRET_KEY']
+    $jwtCreatedAgain = Initialize-DevJwtSecret -Path $backendEnvPath
+    $preservedValues = Read-DevEnvFile -Path $backendEnvPath
+    Assert-DevTest `
+        -Condition (
+            -not $jwtCreatedAgain -and
+            $preservedValues['JWT_SECRET_KEY'] -eq $generatedSecret
+        ) `
+        -Message 'Debe conservar un secreto JWT local ya configurado.'
+
     Assert-DevTest `
         -Condition ((ConvertTo-DevPort -Value '8123' -Default 8000 -VariableName 'TEST_PORT') -eq 8123) `
         -Message 'Debe aceptar puertos válidos.'
@@ -275,6 +298,8 @@ try {
         -Condition ($reusedStatus.State -eq 'stale') `
         -Message 'Debe rechazar un PID reutilizado.'
 
+    $originalStateDirectory = $script:DevStateDirectory
+    $script:DevStateDirectory = Join-Path $temporaryRoot 'port-test-state'
     $listener = [System.Net.Sockets.TcpListener]::new(
         [System.Net.IPAddress]::Loopback,
         0
@@ -301,6 +326,7 @@ try {
     }
     finally {
         $listener.Stop()
+        $script:DevStateDirectory = $originalStateDirectory
     }
 
     Write-Host "$testsRun pruebas de scripts superadas."

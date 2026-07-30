@@ -30,7 +30,32 @@ Definir un diseño conceptual de API que sea coherente con la arquitectura previ
 
 ## Autenticación
 
-La API deberá contemplar un flujo de autenticación basado en credenciales y sesiones o tokens, según la decisión formal que se adopte más adelante. La identidad del usuario debe obtenerse del contexto autenticado y no de un identificador arbitrario proporcionado por el cliente.
+El bloque 3A.1 implementa correo y contraseña con access tokens JWT bearer,
+según [ADR-005](../decisions/ADR-005-authentication-strategy.md). El access
+token contiene `sub` con el UUID del usuario, `iat` y `exp`; la duración es
+configurable y vale 30 minutos por defecto. Firma, caducidad y claims se
+validan antes de resolver el usuario actual en PostgreSQL.
+
+El campo técnico `username` del formulario OAuth2 contiene el correo
+electrónico. La identidad siempre procede del token validado y nunca de un
+identificador arbitrario proporcionado por el cliente.
+
+### Contratos implementados
+
+| Método y ruta | Entrada | Respuesta correcta | Errores relevantes |
+| --- | --- | --- | --- |
+| `POST /api/v1/auth/register` | JSON con `email` y `password` | 201 y usuario público | 409 correo registrado; 422 entrada inválida |
+| `POST /api/v1/auth/token` | `application/x-www-form-urlencoded` con `username` y `password` | 200 con `access_token` y `token_type: bearer` | 401 credenciales incorrectas |
+| `GET /api/v1/users/me` | `Authorization: Bearer <token>` | 200 y usuario público | 401 token o identidad inválidos; 403 cuenta inactiva |
+
+El usuario público contiene `id`, `email`, `is_active`, `created_at` y
+`updated_at`. Ningún contrato expone la contraseña ni `password_hash`. El
+registro no emite token implícitamente. Los errores de login son genéricos para
+no distinguir correo inexistente de contraseña incorrecta.
+
+Refresh tokens, revocación, cierre de sesión servidor, cookies, recuperación,
+verificación de correo, MFA y login social no están implementados. Tampoco
+existe aún almacenamiento de token ni interfaz de autenticación en frontend.
 
 ## Autorización
 
@@ -141,7 +166,8 @@ Estas rutas son conceptuales y no representan una implementación existente.
 
 ## Decisiones pendientes
 
-- Definir el mecanismo concreto de autenticación y sesiones.
+- Definir renovación, revocación, almacenamiento del cliente y gestión
+  avanzada de sesión sobre la base acotada de ADR-005.
 - Determinar si los recursos serán paginados por cursor o por offset.
 - Formalizar los límites de rate limiting y los requisitos de trazabilidad.
 - Decidir el formato definitivo de errores y de respuestas comunes.

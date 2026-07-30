@@ -72,13 +72,14 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
 
 ## Fase 3. Autenticación y perfil
 
-- Estado: [ ] Pendiente
+- Estado: [~] En progreso
 - Objetivo: permitir que un usuario cree una cuenta, acceda al sistema y gestione su perfil básico.
 - Entregables: registro, inicio de sesión, cierre de sesión, perfil fitness y configuración básica.
 - Dependencias: fase 2.
 - Criterios de finalización: un usuario puede registrarse, autenticarse y consultar su propio perfil sin acceder a datos de otros usuarios.
 - Tareas:
-  - [ ] Implementar autenticación.
+  - [~] Implementar identidad y autenticación backend mínima (bloque 3A.1
+    implementado y validado localmente; falta confirmar la CI remota).
   - [ ] Implementar gestión de sesión.
   - [ ] Implementar perfil fitness.
   - [ ] Implementar validación y autorización por propietario.
