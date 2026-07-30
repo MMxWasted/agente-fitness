@@ -61,6 +61,54 @@ uv sync --cache-dir .uv-cache
 uv run --cache-dir .uv-cache pytest
 ```
 
+## Scripts de entorno local
+
+La lógica reutilizable de los scripts se comprueba sin Pester ni dependencias
+adicionales:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-dev-scripts.ps1
+```
+
+Estas pruebas usan un directorio temporal aislado y cubren:
+
+- creación de un `.env` inexistente;
+- conservación de un `.env` existente;
+- lectura de variables y valores entre comillas;
+- valores predeterminados y validación de puertos;
+- citado de argumentos y rechazo de metacaracteres del shell;
+- captura separada de `stdout`, `stderr` y código de salida de procesos nativos;
+- `stderr` informativo con código cero y fallos nativos controlados;
+- normalización del JSON vacío, único, múltiple o nulo de Docker Compose;
+- ausencia controlada del contenedor PostgreSQL y de archivos PID;
+- mensajes con acentos y UTF-8 con BOM en Windows PowerShell 5.1;
+- comprobación de PID junto con su hora de inicio;
+- rechazo de un PID reutilizado;
+- detección no destructiva de un puerto ocupado.
+
+La sintaxis de todos los scripts puede validarse con el parser incluido en
+PowerShell, sin instalar herramientas:
+
+```powershell
+$failed = $false
+Get-ChildItem scripts -Filter *.ps1 | ForEach-Object {
+    $tokens = $null
+    $errors = $null
+    [void][System.Management.Automation.Language.Parser]::ParseFile(
+        $_.FullName,
+        [ref]$tokens,
+        [ref]$errors
+    )
+    if ($errors.Count -gt 0) {
+        $failed = $true
+        $errors
+    }
+}
+if ($failed) {
+    throw 'Existen errores de sintaxis PowerShell.'
+}
+```
+
 ## Integración local con PostgreSQL
 
 Esta verificación sí requiere Docker y parte de archivos `.env` locales
@@ -136,6 +184,11 @@ proyecto.
 | `Backend quality` | Sincronización bloqueada, Ruff, formato, mypy y pytest | Comandos de [Backend](#backend) |
 | `PostgreSQL integration` | Compose, PostgreSQL, Alembic, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
 
+Los tres jobs se ejecutaron correctamente en GitHub. Sus nombres definitivos
+son `Frontend`, `Backend quality` y `PostgreSQL integration`. El tercero validó
+la conexión real con PostgreSQL, el ciclo reversible de Alembic y los contratos
+200 de `/health` y `/ready` mediante un service container.
+
 El job de integración usa `postgres:18.4` como service container. La base,
 usuario y contraseña se definen como valores efímeros exclusivos de CI y no
 proceden de secretos personales. La `DATABASE_URL` solo existe en ese job.
@@ -184,8 +237,7 @@ En GitHub, abre la pestaña **Actions**, selecciona el workflow **CI**, elige la
 ejecución y usa **Re-run jobs**. `workflow_dispatch` también permite iniciar
 una ejecución nueva desde **Run workflow**.
 
-Después de una primera ejecución remota satisfactoria, la protección de `main`
-debería exigir los checks:
+La protección de `main` debería exigir los checks ya validados:
 
 - `Frontend`;
 - `Backend quality`;
@@ -194,9 +246,12 @@ debería exigir los checks:
 La configuración de branch protection no forma parte de este bloque y no se
 realiza mediante la API.
 
-## Verificación completa del bloque 2B.2
+## Verificación completa del bloque 2B.3
 
 ```powershell
+Set-Location .
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-dev-scripts.ps1
+
 Set-Location frontend
 npm.cmd ci
 npm.cmd run lint
@@ -213,25 +268,49 @@ uv run pytest
 
 Set-Location ..
 docker compose --env-file .env.example config --quiet
-docker compose up -d postgres
-docker compose ps
 
-Set-Location backend
-uv run alembic upgrade head
-uv run alembic current --check-heads
-uv run alembic downgrade base
-uv run alembic upgrade head
-uv run alembic current --check-heads
+.\scripts\setup-dev.ps1
+.\scripts\start-dev.ps1
+.\scripts\check-dev.ps1
 
-Set-Location ..
+$health = Invoke-WebRequest http://127.0.0.1:8000/health
+$ready = Invoke-WebRequest http://127.0.0.1:8000/ready
+$frontend = Invoke-WebRequest http://127.0.0.1:5173
+
+.\scripts\stop-dev.ps1
 git diff --check
 git status --short --untracked-files=all
 ```
 
-Además, inicia temporalmente Uvicorn y comprueba `/health` y `/ready` con el
-procedimiento anterior. No dejes procesos ni contenedores activos al finalizar.
+La parada normal debe dejar el volumen
+`agente_fitness_postgres_data` existente. No pruebes
+`-RemoveDatabaseVolume` sobre datos que deban conservarse; utiliza un entorno
+temporal controlado si necesitas verificar esa ruta destructiva.
 
-La sintaxis YAML y las comprobaciones estáticas pueden validarse localmente,
-pero los disparadores, permisos efectivos, service containers y nombres
-definitivos de checks solo pueden confirmarse después de ejecutar el workflow
-en GitHub.
+### Escenarios manuales de 2B.3
+
+| Escenario | Resultado esperado |
+| --- | --- |
+| Preparación limpia | Crea solo los `.env` ausentes, ejecuta instalaciones bloqueadas y no sobrescribe configuración |
+| Arranque normal | PostgreSQL healthy, migraciones en head, contratos HTTP correctos y frontend accesible |
+| Arranque repetido | Reconoce los PID registrados y no crea duplicados |
+| Parada normal | Detiene solo procesos gestionados, ejecuta Compose down y conserva el volumen |
+| Parada repetida | Informa de servicios no iniciados sin matar procesos ajenos |
+| Error de PostgreSQL | Se detiene antes de FastAPI y Vite y muestra estado y logs acotados |
+| Puerto ocupado | Falla con un mensaje útil y no termina el proceso propietario |
+| Persistencia | El volumen continúa tras reiniciar y solo se elimina con `-RemoveDatabaseVolume` |
+
+La validación local completa de 2B.3 finalizó correctamente. Se comprobaron:
+
+- la preparación sin sobrescribir los archivos `.env` existentes;
+- el arranque inicial de PostgreSQL, FastAPI y Vite;
+- el arranque repetido sin crear procesos duplicados;
+- la parada normal y el estado detenido controlado de todos los componentes;
+- un segundo arranque completo usando el volumen PostgreSQL existente;
+- la revisión actual de Alembic en `head`;
+- los contratos HTTP de `/health`, `/ready` y el frontend;
+- la persistencia de `agente_fitness_postgres_data` después de la parada y el
+  reinicio.
+
+La parada final y su repetición no dejaron listeners en los puertos 8000 o
+5173 ni archivos PID gestionados activos.

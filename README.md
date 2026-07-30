@@ -13,32 +13,21 @@ SQLAlchemy, Alembic, endpoints `GET /health` y `GET /ready`, y una página
 inicial que comprueba el estado de la API.
 
 La persistencia aún no contiene modelos de negocio. La integración continua
-está configurada para validar frontend, backend y PostgreSQL, pero permanece
-pendiente de una primera ejecución satisfactoria en GitHub. La
-contenedorización de las aplicaciones y el resto de la infraestructura de la
-Fase 2 siguen pendientes.
+fue validada correctamente en GitHub con sus tres jobs. El repositorio también
+dispone de scripts PowerShell para preparar, iniciar, comprobar y detener el
+entorno local sin Dockerizar frontend ni backend. La validación local completa
+de esos scripts sigue pendiente en un equipo con Docker.
 
 ## Inicio rápido
 
 ```powershell
-Copy-Item .env.example .env
-Copy-Item backend\.env.example backend\.env
-docker compose up -d postgres
-
-Set-Location backend
-uv sync
-uv run alembic upgrade head
-uv run uvicorn app.main:app --reload
+.\scripts\setup-dev.ps1
+.\scripts\start-dev.ps1
+.\scripts\check-dev.ps1
 ```
 
-En otra terminal:
-
-```powershell
-Set-Location frontend
-npm.cmd install
-Copy-Item .env.example .env
-npm.cmd run dev
-```
+Al terminar, ejecuta `.\scripts\stop-dev.ps1`. La parada habitual conserva el
+volumen PostgreSQL.
 
 Consulta la [configuración completa](docs/development/setup.md) y los
 [comandos de pruebas](docs/development/testing.md). Las operaciones y
@@ -53,8 +42,7 @@ la calidad del backend y la integración real con un PostgreSQL efímero.
 
 Consulta la [guía de pruebas](docs/development/testing.md#integración-continua)
 para ver los comandos equivalentes, el diagnóstico de fallos y las
-comprobaciones que deberán proteger `main` después de la primera ejecución
-remota correcta.
+comprobaciones validadas que deberían proteger `main`.
 
 ## Objetivo general
 
@@ -106,4 +94,6 @@ Construir una base sólida para un producto de seguimiento fitness, analítica d
 La aplicación disponible es únicamente una fundación técnica sin funcionalidad
 fitness, autenticación, modelos de negocio ni agente de inteligencia
 artificial. Docker Compose administra únicamente PostgreSQL local; todavía no
-existe contenedorización completa ni despliegue de producción.
+existe contenedorización completa ni despliegue de producción. Los scripts
+locales ejecutan FastAPI y Vite como procesos del host registrados de forma
+explícita.
