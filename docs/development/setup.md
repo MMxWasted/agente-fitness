@@ -2,10 +2,10 @@
 
 ## Alcance
 
-Esta guía cubre la fundación técnica disponible hasta el bloque 2B.1:
-frontend React con TypeScript, backend FastAPI y PostgreSQL local mediante
-Docker Compose. La persistencia incluida es únicamente técnica; todavía no
-existen modelos ni datos de negocio.
+Esta guía cubre la fundación técnica disponible hasta el bloque 2B.3:
+frontend React con TypeScript, backend FastAPI, PostgreSQL local mediante
+Docker Compose y scripts PowerShell para orquestar el entorno. La persistencia
+incluida es únicamente técnica; todavía no existen modelos ni datos de negocio.
 
 ## Requisitos
 
@@ -23,8 +23,8 @@ Versiones detectadas durante los bloques de fundación:
 | npm | `11.8.0` (bloque 2A, 29 de julio de 2026) |
 | Python | `3.12.13` (bloque 2B.1, 30 de julio de 2026) |
 | uv | `0.12.0` (bloque 2B.1, 30 de julio de 2026) |
-| Docker | No disponible en el entorno de verificación del bloque 2B.1 |
-| Docker Compose | No disponible en el entorno de verificación del bloque 2B.1 |
+| Docker | Disponible y validado en el recorrido local del bloque 2B.3 |
+| Docker Compose | Disponible y validado en el recorrido local del bloque 2B.3 |
 
 En el entorno aislado de estas tareas, `python` no estaba publicado en `PATH`.
 Python 3.12.13 se verificó mediante el runtime local proporcionado por Codex y
@@ -32,26 +32,57 @@ uv se ejecutó contra ese intérprete de forma explícita. En un entorno normal,
 uv puede localizar o administrar una versión compatible a partir de
 `backend/pyproject.toml`.
 
-La configuración y las pruebas sin servicios externos sí se verificaron. Los
-comandos que requieren Docker y PostgreSQL deben ejecutarse manualmente en un
-equipo que cumpla esos requisitos.
+La integración real con PostgreSQL, Alembic, `/health` y `/ready` fue validada
+tanto por el workflow de GitHub Actions como mediante el recorrido local
+completo de los scripts con Docker.
 
-## Instalar dependencias
+## Preparación recomendada
 
-Desde la raíz del repositorio, en PowerShell:
+Desde la raíz del repositorio:
 
 ```powershell
+.\scripts\setup-dev.ps1
+```
+
+El script comprueba Git, Docker, Docker Compose, Node.js, npm y uv. Después crea
+los archivos `.env` que falten sin sobrescribir los existentes, ejecuta
+`npm.cmd ci` y sincroniza el backend con `uv sync --locked`. No instala
+herramientas globales ni modifica lockfiles.
+
+Si la política local impide ejecutar archivos `.ps1`, usa un proceso aislado
+sin cambiar la política del sistema:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-dev.ps1
+```
+
+Repetir el script conserva la configuración local y los datos existentes.
+
+### Preparación manual
+
+Si el script falla, ejecuta los pasos equivalentes:
+
+```powershell
+if (-not (Test-Path .env)) {
+    Copy-Item .env.example .env
+}
+if (-not (Test-Path frontend\.env)) {
+    Copy-Item frontend\.env.example frontend\.env
+}
+if (-not (Test-Path backend\.env)) {
+    Copy-Item backend\.env.example backend\.env
+}
+
 Set-Location frontend
-npm.cmd install
+npm.cmd ci
 
 Set-Location ..\backend
-uv sync
+uv sync --locked
 
 Set-Location ..
 ```
 
-Se usa `npm.cmd` para evitar que una política de ejecución de PowerShell
-bloquee el wrapper `npm.ps1`.
+No reemplaces un `.env` con configuración local.
 
 ## Configurar variables de entorno
 
@@ -69,6 +100,14 @@ El archivo `.env` de la raíz configura el servicio PostgreSQL:
 - `POSTGRES_USER`: usuario local.
 - `POSTGRES_PASSWORD`: contraseña exclusiva del entorno local.
 - `POSTGRES_PORT`: puerto publicado en el host.
+- `BACKEND_PORT`: puerto local de FastAPI usado por los scripts, 8000 por
+  defecto.
+- `FRONTEND_PORT`: puerto local de Vite usado por los scripts, 5173 por
+  defecto.
+
+Los `.env` creados antes de 2B.3 pueden no contener los dos últimos campos. En
+ese caso los scripts conservan compatibilidad usando 8000 y 5173; puedes
+añadirlos explícitamente cuando necesites cambiar esos puertos.
 
 El frontend utiliza `VITE_API_BASE_URL` como URL base del backend.
 
@@ -85,10 +124,47 @@ Si cambias usuario, contraseña, puerto o nombre de base en el `.env` de la
 raíz, actualiza de forma coherente `DATABASE_URL` en `backend\.env`. No uses
 las credenciales de ejemplo fuera del desarrollo local.
 
+Si cambias `BACKEND_PORT`, actualiza también `VITE_API_BASE_URL`. Si cambias
+`FRONTEND_PORT`, actualiza `CORS_ALLOWED_ORIGINS` para conservar la comunicación
+entre frontend y backend.
+
 Los archivos `.env` locales están ignorados por Git. Los archivos
 `.env.example` no contienen secretos reales y sí deben permanecer versionados.
 
-## Iniciar PostgreSQL
+## Flujo habitual
+
+Después de la preparación:
+
+```powershell
+.\scripts\start-dev.ps1
+.\scripts\check-dev.ps1
+```
+
+`start-dev.ps1` valida la configuración, inicia solo PostgreSQL con Compose,
+espera su healthcheck, aplica `alembic upgrade head`, inicia FastAPI, comprueba
+`/health` y `/ready`, inicia Vite y espera una respuesta HTTP. Los reintentos
+son acotados y un fallo revierte únicamente los procesos iniciados por esa
+ejecución.
+
+`check-dev.ps1` muestra Docker, PostgreSQL, procesos gestionados, `/health`,
+`/ready`, frontend y revisión Alembic. Devuelve código distinto de cero cuando
+el entorno completo no está disponible.
+
+Los procesos del backend y frontend se ejecutan ocultos y sus logs se guardan
+en:
+
+```text
+.dev-state/logs/backend.stdout.log
+.dev-state/logs/backend.stderr.log
+.dev-state/logs/frontend.stdout.log
+.dev-state/logs/frontend.stderr.log
+```
+
+El directorio `.dev-state/` está ignorado por Git y no contiene configuración
+ni credenciales. Cada proceso se registra mediante PID y hora de inicio para no
+confundirlo con un PID reutilizado.
+
+## Inicio manual de PostgreSQL
 
 Desde la raíz:
 
@@ -102,7 +178,7 @@ El servicio se llama `postgres`, utiliza la imagen oficial `postgres:18.4`,
 publica el puerto configurado y conserva los datos en el volumen nombrado
 `agente_fitness_postgres_data`.
 
-## Aplicar migraciones
+## Aplicación manual de migraciones
 
 ```powershell
 Set-Location backend
@@ -114,7 +190,7 @@ Set-Location ..
 La revisión inicial es una línea base técnica vacía. Alembic administra su
 tabla de versión, pero todavía no crea tablas de negocio.
 
-## Iniciar el backend
+## Inicio manual del backend
 
 En una terminal PowerShell:
 
@@ -123,7 +199,7 @@ Set-Location backend
 uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-## Iniciar el frontend
+## Inicio manual del frontend
 
 En otra terminal PowerShell:
 
@@ -144,9 +220,24 @@ npm.cmd run dev -- --host 127.0.0.1
 `GET /ready` ejecuta `SELECT 1`: devuelve 200 cuando PostgreSQL responde y 503
 con un contrato controlado cuando no está disponible.
 
-## Detener PostgreSQL
+## Detener el entorno
 
-Desde la raíz:
+La parada recomendada detiene únicamente los árboles de procesos registrados y
+después ejecuta `docker compose down`:
+
+```powershell
+.\scripts\stop-dev.ps1
+```
+
+Es segura si alguno de los componentes ya está detenido y conserva tanto los
+logs como el volumen `agente_fitness_postgres_data`. La eliminación de todos
+los datos requiere el parámetro inequívoco:
+
+```powershell
+.\scripts\stop-dev.ps1 -RemoveDatabaseVolume
+```
+
+La alternativa manual desde la raíz es:
 
 ```powershell
 docker compose down
@@ -175,11 +266,18 @@ docker compose version
 Instala o inicia Docker fuera de este repositorio antes de continuar. Esta guía
 no instala herramientas globales ni modifica la configuración del sistema.
 
+`setup-dev.ps1` y `start-dev.ps1` se detienen con un mensaje claro antes de
+iniciar servicios cuando falta Docker. `check-dev.ps1` representa ese estado
+como desconocido.
+
 ### PostgreSQL no alcanza el estado healthy
 
 Ejecuta `docker compose ps` y `docker compose logs postgres`. Comprueba que el
 puerto no esté ocupado y que las cuatro variables `POSTGRES_*` sean válidas.
 No copies logs que puedan contener información sensible.
+
+El script de arranque muestra automáticamente `docker compose ps` y las últimas
+50 líneas del servicio antes de detenerse.
 
 ### `/ready` devuelve 503
 
@@ -222,9 +320,37 @@ Detén el proceso que lo utiliza o cambia `POSTGRES_PORT`. Si cambias un puerto,
 actualiza también `DATABASE_URL`, `VITE_API_BASE_URL` o
 `CORS_ALLOWED_ORIGINS`, según corresponda.
 
+Los scripts no terminan procesos ajenos. Si `BACKEND_PORT` o `FRONTEND_PORT`
+está ocupado sin un registro válido en `.dev-state/`, el arranque falla y pide
+liberar o reconfigurar el puerto.
+
+### Entorno parcialmente iniciado
+
+Ejecuta primero:
+
+```powershell
+.\scripts\check-dev.ps1
+.\scripts\stop-dev.ps1
+```
+
+La parada elimina registros PID obsoletos sin matar el proceso que haya
+reutilizado ese PID. Después puedes repetir `start-dev.ps1`. Si una ventana de
+PowerShell se cierra de forma forzada justo durante el arranque, revisa los
+logs y el estado antes de intervenir manualmente.
+
+### Consultar logs
+
+```powershell
+Get-Content .dev-state\logs\backend.stderr.log -Tail 50
+Get-Content .dev-state\logs\frontend.stderr.log -Tail 50
+```
+
+Los logs se reinician al volver a iniciar cada proceso y se conservan durante
+la parada normal.
+
 ## Infraestructura pendiente
 
 Docker Compose solo administra PostgreSQL local. Los contenedores de frontend y
-backend y la infraestructura de producción siguen fuera de este bloque. La
-integración continua ya está configurada, pero debe validarse mediante una
-ejecución remota satisfactoria en GitHub.
+backend y la infraestructura de producción siguen fuera de este bloque. El
+workflow `CI` y el recorrido local completo de 2B.3 fueron validados
+correctamente.

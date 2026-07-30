@@ -44,7 +44,16 @@ Los comandos parten de la raíz y funcionan en PowerShell después de copiar los
 archivos `.env.example`, como explica la
 [guía de configuración](setup.md).
 
-Validar e iniciar PostgreSQL:
+El flujo recomendado prepara configuración y dependencias, inicia PostgreSQL,
+espera su healthcheck y aplica `upgrade head`:
+
+```powershell
+.\scripts\setup-dev.ps1
+.\scripts\start-dev.ps1
+.\scripts\check-dev.ps1
+```
+
+La alternativa manual para validar e iniciar PostgreSQL es:
 
 ```powershell
 docker compose config
@@ -70,18 +79,24 @@ uv run alembic upgrade head
 Set-Location ..
 ```
 
-Detener PostgreSQL conservando los datos:
+Detener todo el entorno conservando los datos:
 
 ```powershell
-docker compose down
+.\scripts\stop-dev.ps1
 ```
 
 Eliminar también el volumen local, únicamente cuando se quiera perder todos
 los datos:
 
 ```powershell
-docker compose down --volumes
+.\scripts\stop-dev.ps1 -RemoveDatabaseVolume
 ```
+
+El parámetro explícito es obligatorio para que el script ejecute
+`docker compose down --volumes`. La parada normal nunca elimina el volumen.
+Si los scripts no pueden ejecutarse, los comandos manuales equivalentes son
+`docker compose down` y, para la eliminación deliberada,
+`docker compose down --volumes`.
 
 ## Verificación manual
 
@@ -101,9 +116,12 @@ Los resultados esperados son 200 con `{"status":"ok"}` y 200 con
 `{"status":"ready"}`. Al detener PostgreSQL, `/health` debe seguir devolviendo
 200 y `/ready` debe devolver 503 con `{"status":"unavailable"}`.
 
-La validación Docker/PostgreSQL no pudo ejecutarse en el entorno donde se creó
-el bloque porque el binario `docker` no estaba disponible. No debe darse por
-superada hasta completar este procedimiento en un equipo con Docker.
+El job `PostgreSQL integration` se ejecutó correctamente en GitHub y validó
+PostgreSQL real, las migraciones reversibles y ambos contratos mediante un
+service container. El recorrido local de los scripts 2B.3 no pudo ejecutarse
+en el entorno de implementación porque el binario `docker` no estaba
+disponible; debe completarse en un equipo con Docker antes de marcar ese bloque
+como finalizado.
 
 ## Límites actuales
 

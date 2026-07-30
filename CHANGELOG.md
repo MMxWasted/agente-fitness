@@ -24,6 +24,14 @@
   calidad backend e integración PostgreSQL.
 - Validación automatizada de Compose, ciclo reversible de Alembic y contratos
   HTTP de liveness y readiness contra un PostgreSQL efímero.
+- Scripts PowerShell reproducibles para preparar, iniciar, comprobar y detener
+  PostgreSQL, FastAPI y Vite en desarrollo local.
+- Gestión local segura de procesos mediante PID y hora de inicio, con logs y
+  estado temporal excluidos de Git.
+- Comprobación conjunta de Docker, PostgreSQL, Alembic, `/health`, `/ready` y
+  frontend, con eliminación del volumen solo mediante una opción explícita.
+- Validación local de extremo a extremo del arranque reproducible, incluidos el
+  reinicio, Alembic en `head` y la persistencia del volumen PostgreSQL.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.

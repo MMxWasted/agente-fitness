@@ -48,7 +48,7 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
 
 ## Fase 2. Fundación técnica
 
-- Estado: [~] En progreso
+- Estado: [x] Finalizado
 - Objetivo: preparar la base técnica del proyecto sin asumir una implementación funcional completa.
 - Entregables: estructura real del monorepo, frontend React con TypeScript, backend FastAPI, PostgreSQL, Docker Compose, Alembic, variables de entorno, linting, tipos y pruebas, GitHub Actions, endpoint GET /health, página inicial mínima y arranque reproducible documentado.
 - Dependencias: fase 1.
@@ -57,16 +57,18 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
   - [x] Crear la estructura real del monorepo.
   - [x] Inicializar frontend React con TypeScript.
   - [x] Inicializar backend FastAPI.
-  - [~] Configurar PostgreSQL (implementado; verificación real pendiente de Docker).
-  - [~] Configurar Docker Compose (implementado; verificación real pendiente).
-  - [~] Configurar Alembic (implementado; ciclo conectado pendiente de verificar).
+  - [x] Configurar PostgreSQL (conexión real validada en GitHub Actions).
+  - [x] Configurar Docker Compose (configuración y recorrido local validados).
+  - [x] Configurar Alembic (ciclo conectado y reversible validado en CI).
   - [x] Configurar variables de entorno.
   - [x] Configurar linting, tipos y pruebas.
-  - [~] Configurar GitHub Actions (workflow preparado; ejecución remota pendiente).
+  - [x] Configurar GitHub Actions (bloque 2B.2 validado con `Frontend`,
+    `Backend quality` y `PostgreSQL integration` correctos).
   - [x] Implementar GET /health.
   - [x] Implementar GET /ready con comprobación mínima de PostgreSQL.
   - [x] Crear una página inicial mínima que compruebe el estado de la API.
-  - [~] Documentar y verificar el arranque reproducible.
+  - [x] Documentar y verificar el arranque reproducible (bloque 2B.3 validado
+    de extremo a extremo con Docker).
 
 ## Fase 3. Autenticación y perfil
 
