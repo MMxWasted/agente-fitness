@@ -78,8 +78,9 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
 - Dependencias: fase 2.
 - Criterios de finalización: un usuario puede registrarse, autenticarse y consultar su propio perfil sin acceder a datos de otros usuarios.
 - Tareas:
-  - [~] Implementar identidad y autenticación backend mínima (bloque 3A.1
-    implementado y validado localmente; falta confirmar la CI remota).
+  - [x] Implementar identidad y autenticación backend mínima (bloque 3A.1
+    implementado, validado y fusionado; los tres jobs de GitHub Actions
+    finalizaron correctamente en el pull request #6).
   - [ ] Implementar gestión de sesión.
   - [ ] Implementar perfil fitness.
   - [ ] Implementar validación y autorización por propietario.
