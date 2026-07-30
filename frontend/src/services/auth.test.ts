@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getCurrentUser,
   login,
@@ -11,6 +11,10 @@ const tokenPayload = {
   token_type: 'bearer',
   expires_in: 1800,
 }
+
+beforeEach(() => {
+  vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8000')
+})
 
 afterEach(() => {
   vi.unstubAllGlobals()
