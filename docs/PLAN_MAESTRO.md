@@ -285,9 +285,9 @@ aplicación podrá mostrar posteriormente:
 * Cambios absolutos.
 * Cambios porcentuales cuando tengan sentido.
 
-La sincronización con OneDrive, el análisis histórico avanzado y la
-integración con entrenamientos se mantienen fuera de 3B.2 hasta sus bloques
-correspondientes.
+La analítica corporal determinista permanece fuera de 3B.2B y corresponde a
+3B.2C. La sincronización con OneDrive y la integración con entrenamientos se
+mantienen para bloques posteriores.
 
 ### 4.8 Analítica básica
 
@@ -1286,8 +1286,9 @@ implementa el perfil fitness básico privado; 3B.2A implementa lectura segura y
 previsualización autenticada de un XLSX conocido sin persistencia. Objetivos,
 equipamiento, preferencias, limitaciones y autorización general por
 propietario continúan pendientes. 3B.2B gestionará la confirmación idempotente
-y el historial privado mediante entidades separadas; 3B.2C cubrirá historial,
-reversión e integraciones. Ninguna de estas entregas amplía `UserProfile`.
+y el historial privado mediante entidades separadas, incluido el versionado y
+la reversión de importaciones propias; 3B.2C cubrirá la analítica corporal
+determinista. Ninguna de estas entregas amplía `UserProfile`.
 
 ### Fase 4 — Catálogo de ejercicios
 

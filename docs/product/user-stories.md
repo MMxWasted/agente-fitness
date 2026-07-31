@@ -166,8 +166,9 @@
 - Prioridad: Must
 - Fase: 3, bloque 3B.2A
 - Dependencias: AUTH-002
-- Estado: Completed locally — la validación remota de la rama permanece
-  pendiente.
+- Estado: Completed — implementado, contrastado con una copia anonimizada del
+  formato real, validado y fusionado; los tres jobs finalizaron correctamente
+  en el pull request #12.
 
 #### Criterios de aceptación
 

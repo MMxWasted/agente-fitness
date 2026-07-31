@@ -89,10 +89,12 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
     finalizaron correctamente en el pull request #10).
   - [~] 3B.2 — Historial de mediciones corporales e importación desde Excel.
     - [x] 3B.2A — Lectura segura y previsualización de mediciones desde Excel
-      (implementado y validado localmente; sin persistencia).
-    - [ ] 3B.2B — Confirmación idempotente y persistencia de revisiones y
-      valores normalizados.
-    - [ ] 3B.2C — Historial, reversión e integraciones de mediciones.
+      (implementado, contrastado con una copia anonimizada del formato real,
+      validado y fusionado; `Frontend`, `Backend quality` y
+      `PostgreSQL integration` finalizaron correctamente en el pull request
+      #12; sin persistencia).
+    - [ ] 3B.2B — Persistencia e historial de mediciones corporales.
+    - [ ] 3B.2C — Analítica corporal determinista.
   - [ ] Implementar validación y autorización por propietario.
 
 3B.2A ofrece una previsualización autenticada con adaptador XLSX versionado,
@@ -100,9 +102,10 @@ catálogo de métricas y controles ZIP/XML, pero descarta el archivo y no crea
 tablas. 3B.2B usará entidades históricas privadas, separadas de
 `user_profiles`, con una sesión por revisión y valores normalizados por
 métrica, categoría, lado y unidad; deberá confirmar reanalizando el archivo,
-preservar procedencia, evitar duplicados y detectar revisiones nuevas. El
-historial, la reversión, el análisis, la integración con entrenamientos y una
-posible sincronización con OneDrive permanecen pendientes.
+preservar procedencia, evitar duplicados, versionar cambios, ofrecer historial
+y permitir revertir importaciones propias. La analítica corporal pertenece a
+3B.2C; la integración con entrenamientos y una posible sincronización con
+OneDrive permanecen para bloques posteriores.
 
 ## Fase 4. Catálogo de ejercicios
 

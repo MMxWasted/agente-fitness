@@ -71,6 +71,9 @@
   guardar el `File` en almacenamiento web.
 - Fixture XLSX sintético anonimizado, ADR-014 y cobertura de backend, API y
   frontend para la previsualización segura del bloque 3B.2A.
+- Contraste del adaptador V1 con una copia anonimizada de la estructura real y
+  validación satisfactoria de 3B.2A mediante `Frontend`, `Backend quality` y
+  `PostgreSQL integration` antes de su fusión en `main`.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.
