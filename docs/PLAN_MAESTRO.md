@@ -180,9 +180,10 @@ parte de `UserProfile`.
 Peso, composición corporal, pliegues y perímetros tampoco forman parte de
 `UserProfile`. El bloque independiente `3B.2 — Historial de mediciones
 corporales e importación desde Excel` empieza en 3B.2A con una previsualización
-segura y sin persistencia. 3B.2B los modelará mediante entidades históricas
-separadas y privadas, sin columnas JSON genéricas ni acoplamiento del perfil al
-formato de una hoja concreta.
+segura. 3B.2B los modela mediante entidades históricas separadas y privadas,
+sin columnas JSON genéricas ni acoplamiento del perfil al formato de una hoja
+concreta. La validación local está completa y la remota queda pendiente del
+pull request.
 
 ### 4.3 Objetivos
 
@@ -261,8 +262,8 @@ El usuario podrá:
 ### 4.7 Peso y medidas corporales
 
 3B.2A permite analizar manualmente un XLSX conocido y previsualizar las
-revisiones sin guardar el archivo ni los valores. 3B.2B deberá representar una
-sesión por revisión fechada. Cada sesión podrá contener valores normalizados
+revisiones. 3B.2B representa una sesión por revisión fechada. Cada sesión
+contiene valores normalizados
 por tipo de métrica, categoría, lado izquierdo, derecho o no aplicable y
 unidad. Entre las mediciones previstas están:
 
@@ -273,11 +274,11 @@ unidad. Entre las mediciones previstas están:
 * Valores bilaterales cuando corresponda.
 
 La previsualización utiliza un adaptador versionado, hace visibles fechas o
-unidades ambiguas y calcula un fingerprint normalizado. La confirmación futura
-deberá reanalizar el Excel, comprobar ese fingerprint, ser idempotente, detectar
-nuevas columnas de revisión y conservar procedencia y fecha sin asumir que el
-archivo es la fuente permanente ni acoplar el frontend a su estructura. La
-aplicación podrá mostrar posteriormente:
+unidades ambiguas y calcula un fingerprint normalizado. El plan y la
+confirmación reanalizan el Excel, comprueban fingerprints, aplican
+idempotencia, detectan revisiones nuevas y conservan procedencia y fecha sin
+asumir que el archivo es la fuente permanente ni acoplar el frontend a su
+estructura. La aplicación podrá mostrar posteriormente:
 
 * Evolución temporal.
 * Comparación entre fechas.
@@ -593,25 +594,30 @@ relación con `User` es uno a uno y usa borrado en cascada. Los módulos de
 objetivos, disponibilidad, preferencias, equipamiento y limitaciones continúan
 separados y pendientes.
 
-### 9.2.1 BodyMeasurementReview y BodyMeasurementValue
+### 9.2.1 Historial corporal normalizado
 
-Persistencia futura de 3B.2B, todavía no implementada. 3B.2A solo materializa
-la lectura segura y el contrato de previsualización:
+Persistencia de 3B.2B implementada y validada localmente:
 
-* `BodyMeasurementReview` representará una revisión fechada y conservará su
-  propietario y procedencia.
-* `BodyMeasurementValue` representará cada observación normalizada por tipo de
-  métrica, categoría, lado y unidad.
-* Las entidades tendrán dimensión temporal propia y estarán separadas de
-  `UserProfile`; no serán columnas adicionales ni un documento JSON genérico.
-* La propiedad privada se relacionará con `User` o `UserProfile`, pero siempre
-  se resolverá desde el usuario autenticado.
-* Una clave de procedencia estable deberá permitir importación idempotente y
-  detección de nuevas revisiones sin duplicar las existentes.
-* La confirmación deberá volver a analizar el archivo y comparar el fingerprint
-  con la previsualización; el Excel original no se conservará.
-* No se define todavía un esquema definitivo, confirmación, sincronización,
-  analítica ni integración con OneDrive.
+* `BodyMeasurementSource` representa una procedencia lógica privada y mantiene
+  una versión monotónica para serializar cambios concurrentes.
+* `BodyMeasurementImport` conserva trazabilidad técnica, fingerprints, hashes,
+  estado y recuentos sin guardar el archivo ni valores en bruto.
+* `BodyMeasurementReview` representa una revisión fechada, su identidad
+  estable, hash de contenido, versión y revisión predecesora.
+* `BodyMeasurementValue` representa cada observación normalizada por tipo de
+  métrica, categoría, lado y unidad mediante `NUMERIC(14,6)`.
+* Las entidades tienen dimensión temporal propia y están separadas de
+  `UserProfile`; no son columnas adicionales ni un documento JSON genérico.
+* La propiedad privada se relaciona directamente con `User` y siempre se
+  resuelve desde el usuario autenticado.
+* La identidad de revisión se separa del hash de contenido para clasificar
+  revisiones nuevas, idénticas y modificadas. Una modificación aceptada crea
+  una versión inmutable; no sobrescribe la anterior.
+* La confirmación vuelve a analizar el archivo, compara fingerprints, exige
+  una clave idempotente y bloquea la fuente. El Excel original no se conserva.
+* La reversión elimina solo las revisiones creadas por la importación y restaura
+  predecesoras cuando no existe una versión posterior dependiente.
+* La sincronización, analítica e integración con OneDrive siguen pendientes.
 
 ### 9.3 UserEquipment
 
@@ -1283,11 +1289,11 @@ Resultado esperado:
 Estado operativo: 3A.1 implementa identidad y access token; 3A.2 implementa la
 gestión de sesión web, renovación, revocación e interfaz mínima; 3B.1
 implementa el perfil fitness básico privado; 3B.2A implementa lectura segura y
-previsualización autenticada de un XLSX conocido sin persistencia. Objetivos,
+previsualización autenticada de un XLSX conocido. 3B.2B implementa la
+confirmación idempotente y el historial privado con versionado y reversión.
+Objetivos,
 equipamiento, preferencias, limitaciones y autorización general por
-propietario continúan pendientes. 3B.2B gestionará la confirmación idempotente
-y el historial privado mediante entidades separadas, incluido el versionado y
-la reversión de importaciones propias; 3B.2C cubrirá la analítica corporal
+propietario continúan pendientes. 3B.2C cubrirá la analítica corporal
 determinista. Ninguna de estas entregas amplía `UserProfile`.
 
 ### Fase 4 — Catálogo de ejercicios

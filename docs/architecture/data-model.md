@@ -226,28 +226,57 @@ caducadas se limpian de forma oportunista al crear o renovar sesiones.
 - Restricciones relevantes: debe conservarse incluso si la rutina cambia y debe registrar el estado completado o fallido.
 - Ciclo de vida: creado y no alterado una vez finalizado el registro.
 
-### BodyMeasurementReview y BodyMeasurementValue
+### BodyMeasurementSource
 
-- Estado: 3B.2A implementa el contrato de previsualización en memoria; no
-  existen tablas. La persistencia continúa pendiente de 3B.2B.
-- Propósito: representar una revisión corporal fechada y sus observaciones
-  normalizadas sin ampliar `UserProfile`.
-- Campos conceptuales de la revisión: propietario, fecha de la revisión,
-  procedencia y clave idempotente de importación.
-- Campos conceptuales del valor: tipo de métrica, categoría, lado izquierdo,
-  derecho o no aplicable, unidad y valor.
-- Relaciones: cada revisión privada pertenece a un usuario o a su perfil y
-  contiene múltiples valores.
-- Reglas de propiedad: el propietario siempre se deriva del usuario
-  autenticado; ningún usuario puede consultar revisiones ajenas.
-- Restricciones relevantes: una sesión por revisión, fechas válidas,
-  normalización explícita y ausencia de documentos JSON genéricos.
-- Importación: 3B.2A reconoce un formato V1 con catálogo normalizado y calcula
-  un fingerprint sin conservar el original. 3B.2B deberá reanalizar durante la
-  confirmación, detectar columnas nuevas, evitar duplicados y conservar la
-  procedencia sin acoplar la API o la interfaz al formato del archivo.
-- Evolución posterior: análisis histórico, relación con entrenamientos y
-  posible sincronización con OneDrive.
+- Estado: implementado en 3B.2B y validado localmente.
+- Propósito: identificar una procedencia lógica privada, no un archivo físico.
+- Campos principales: UUID, `user_id`, nombre visible, `source_kind`, clave
+  lógica, `history_version` y timestamps UTC.
+- Restricciones: clave lógica única por usuario; `source_kind` admite
+  actualmente `manual_excel`; versión no negativa.
+- Concurrencia: `history_version` se comprueba bajo bloqueo de fila al confirmar
+  o revertir para serializar mutaciones de una misma fuente.
+
+### BodyMeasurementImport
+
+- Propósito: trazar una confirmación sin conservar el Excel ni payloads
+  corporales en bruto.
+- Campos principales: UUID, propietario, fuente, hash de clave idempotente,
+  digest de petición, SHA-256 del archivo, versión del adaptador, fingerprints,
+  estado, recuentos y timestamps UTC.
+- Idempotencia: `(user_id, idempotency_key_hash)` es único. La misma clave y
+  digest reproduce la respuesta; otro digest entra en conflicto.
+- Reversión: el estado pasa de `completed` a `reverted` y se registra
+  `reverted_at`; repetir la reversión no duplica efectos.
+
+### BodyMeasurementReview
+
+- Propósito: representar una revisión corporal fechada e inmutable.
+- Campos principales: UUID, propietario, fuente, importación, fecha, etiquetas,
+  desambiguador, `identity_key`, `content_hash`, versión, predecesora,
+  `is_current` y timestamps UTC.
+- Identidad: SHA-256 canónico de usuario, fuente, fecha completa, etiqueta
+  normalizada y desambiguador. El hash de contenido se calcula aparte sobre
+  los valores normalizados ordenados.
+- Versionado: una modificación aceptada crea una fila nueva que referencia la
+  anterior. Un índice parcial único garantiza una sola versión vigente por
+  identidad y una restricción impide cadenas entre propietarios o identidades.
+
+### BodyMeasurementValue
+
+- Propósito: almacenar cada observación reportada de una revisión.
+- Campos principales: UUID de revisión, código de métrica, categoría, lado,
+  `NUMERIC(14,6)`, unidad, etiqueta original, origen, versión de catálogo y
+  timestamp UTC.
+- Restricciones: una combinación de métrica y lado por revisión; categorías,
+  lados, unidades y origen cerrados por `CHECK`; los decimales se validan antes
+  de persistir sin redondeo silencioso.
+
+Las cuatro entidades dependen de `User` mediante propiedad privada y borrado en
+cascada, pero permanecen separadas de `UserProfile`. La confirmación reanaliza
+el formato V1, compara fingerprints y solo acepta decisiones tipadas, nunca
+valores corporales proporcionados como JSON. El análisis histórico, la
+relación con entrenamientos y OneDrive siguen pendientes.
 
 ### NutritionLog
 

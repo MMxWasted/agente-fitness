@@ -9,6 +9,8 @@ from app.schemas.body_measurement_import import (
     MeasurementUnit,
 )
 
+CATALOG_VERSION = "body-measurements-v1"
+
 _WHITESPACE_PATTERN = re.compile(r"\s+")
 _PUNCTUATION_PATTERN = re.compile(r"[^a-z0-9%]+")
 
@@ -258,6 +260,7 @@ METRIC_CATALOG: tuple[MetricDefinition, ...] = (
 METRICS_BY_ALIAS = {
     alias: metric for metric in METRIC_CATALOG for alias in metric.aliases
 }
+METRICS_BY_CODE = {metric.code: metric for metric in METRIC_CATALOG}
 
 CATEGORY_ALIASES: dict[str, MeasurementCategory] = {
     "bioimpedancia": "bioimpedance",

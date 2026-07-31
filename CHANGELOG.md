@@ -74,6 +74,25 @@
 - Contraste del adaptador V1 con una copia anonimizada de la estructura real y
   validación satisfactoria de 3B.2A mediante `Frontend`, `Backend quality` y
   `PostgreSQL integration` antes de su fusión en `main`.
+- Persistencia privada y normalizada de mediciones mediante fuentes,
+  importaciones, revisiones inmutables versionadas y valores por métrica,
+  categoría, lado y unidad, separada de `user_profiles`.
+- Planificación y confirmación multipart que reanalizan el XLSX, comparan
+  fingerprints, exigen decisiones explícitas e `Idempotency-Key`, serializan
+  por fuente y no aceptan valores corporales proporcionados como JSON.
+- Contratos bearer para crear y listar fuentes, consultar importaciones y
+  revisiones propias con paginación y filtros, abrir el detalle normalizado y
+  revertir importaciones transaccionalmente.
+- Migración reversible `20260731_0005`, versionado sin sobrescritura, unicidad
+  parcial de la revisión vigente, restauración de predecesoras y borrado en
+  cascada al eliminar una cuenta.
+- Flujo React mobile-first para seleccionar o crear fuente, resolver
+  ambigüedades, planificar, confirmar, consultar historial y revertir con
+  confirmación explícita, manteniendo archivo y clave idempotente en memoria.
+- Cobertura local unitaria, frontend y PostgreSQL para identidad y contenido,
+  duplicados, cambios, reintentos idempotentes, concurrencia, rollback,
+  propiedad, versionado, reversión y migración de 3B.2B; CI remota pendiente
+  del PR.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.

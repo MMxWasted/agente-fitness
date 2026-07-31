@@ -5,9 +5,25 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.core.config import get_settings
 from app.db.base import Base
-from app.models import AuthSession, User, UserProfile
+from app.models import (
+    AuthSession,
+    BodyMeasurementImport,
+    BodyMeasurementReview,
+    BodyMeasurementSource,
+    BodyMeasurementValue,
+    User,
+    UserProfile,
+)
 
-_ = (AuthSession, User, UserProfile)
+_ = (
+    AuthSession,
+    BodyMeasurementImport,
+    BodyMeasurementReview,
+    BodyMeasurementSource,
+    BodyMeasurementValue,
+    User,
+    UserProfile,
+)
 
 config = context.config
 

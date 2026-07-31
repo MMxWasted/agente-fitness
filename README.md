@@ -15,10 +15,15 @@ solo en memoria. El bloque 3B.1 añade un perfil fitness básico privado,
 consultable y editable, con nombre visible, contexto físico mínimo, experiencia,
 zona horaria y sistema de unidades. El bloque 3B.2A incorpora la carga
 autenticada y previsualización segura de un formato XLSX conocido de revisiones
-corporales, sin persistir el archivo ni sus valores.
+corporales. El bloque 3B.2B añade fuentes lógicas privadas, confirmación
+idempotente, historial normalizado y versionado, consulta y reversión de
+importaciones propias; el archivo original no se conserva. La implementación
+y validación local están completas, con la validación remota pendiente del
+pull request.
 
 La integración continua mantiene tres jobs independientes y ejecuta pruebas
-reales de autenticación, sesiones y perfil contra un PostgreSQL efímero. Los
+reales de autenticación, sesiones, perfil e historial corporal contra un
+PostgreSQL efímero. Los
 scripts PowerShell preparan, inician, comprueban y detienen el entorno local
 sin Dockerizar frontend ni backend; su recorrido completo con Docker ya fue
 validado.

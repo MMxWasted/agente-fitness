@@ -116,8 +116,8 @@ Una medición corporal es un registro de variables físicas del usuario, como pe
 
 Una revisión corporal es el conjunto fechado de valores reportados en una
 misma toma. Puede incluir bioimpedancia, pliegues y perímetros, con lado
-izquierdo, derecho o no aplicable. En 3B.2A solo se previsualiza; todavía no
-existe una entidad persistida.
+izquierdo, derecho o no aplicable. En 3B.2B se persiste como una entidad
+privada e inmutable que puede tener versiones enlazadas sin sobrescritura.
 
 ## Adaptador de mediciones XLSX
 
@@ -129,8 +129,28 @@ alias controlados y no pretende importar hojas arbitrarias.
 
 El fingerprint de previsualización es un SHA-256 determinista de las revisiones
 y mediciones normalizadas, sus unidades, lados y ambigüedades relevantes.
-Excluye estilos, nombre físico y propiedades del documento. 3B.2B deberá
-recalcularlo desde el archivo antes de confirmar.
+Excluye estilos, nombre físico y propiedades del documento. 3B.2B lo recalcula
+desde el archivo al planificar y confirmar.
+
+## Fuente lógica de mediciones
+
+Una fuente lógica identifica una procedencia estable del historial de un
+usuario, por ejemplo su Excel manual principal. No representa ni conserva un
+archivo físico y mantiene una versión para serializar cambios concurrentes.
+
+## Identidad de revisión
+
+La identidad de revisión es un hash canónico de propietario, fuente, fecha,
+etiqueta normalizada y desambiguador. Permite reconocer la misma revisión sin
+depender de sus valores. El hash de contenido se calcula aparte para distinguir
+una repetición idéntica de una modificación que requiere nueva versión.
+
+## Reversión de importación corporal
+
+La reversión es la operación explícita y transaccional que deshace las
+revisiones creadas por un lote y restaura sus predecesoras cuando no existe una
+versión posterior dependiente. No equivale a borrar libremente una revisión
+histórica individual.
 
 ## Media móvil
 

@@ -139,6 +139,88 @@
   margin-top: 1.25rem;
 }
 
+.measurement-section {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.measurement-section h3,
+.measurement-section h4 {
+  margin: 0;
+}
+
+.source-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.decision-fieldset {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+}
+
+.decision-fieldset legend {
+  padding-inline: 0.35rem;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.decision-option {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin-top: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.decision-option input {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.12rem;
+  flex: 0 0 auto;
+}
+
+.import-plan,
+.review-detail {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  background: #f8fafc;
+}
+
+.history-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-list li {
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  color: var(--text-muted);
+  background: var(--surface);
+}
+
+.button-compact {
+  min-height: 2.1rem;
+  margin: 0.5rem 0 0 0.5rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+}
+
 .measurement-preview h3,
 .measurement-preview h4 {
   margin: 0;
@@ -418,5 +500,10 @@ button:disabled {
   .profile-form__row,
   .profile-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .source-form {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
   }
 }

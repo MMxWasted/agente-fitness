@@ -112,8 +112,9 @@ function App() {
 
       <p className="scope-note">
         El access token se conserva solo en memoria; la cookie de renovación
-        no es accesible desde JavaScript. El perfil y la previsualización son
-        privados y se consultan mediante el access token.
+        no es accesible desde JavaScript. El perfil, la importación y el
+        historial corporal son privados y se consultan mediante el access
+        token.
       </p>
     </main>
   )
