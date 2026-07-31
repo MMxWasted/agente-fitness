@@ -59,6 +59,15 @@ absoluta.
 | `GET /api/v1/profile` | Access token bearer | 200 y perfil propio | 401 token inválido; 403 cuenta inactiva; 404 perfil no creado |
 | `PUT /api/v1/profile` | Access token bearer y perfil completo sin identificadores internos | 200 y perfil creado o reemplazado | 401 token inválido; 403 cuenta inactiva; 422 entrada inválida |
 | `POST /api/v1/body-measurement-imports/preview` | Bearer y `multipart/form-data` con un `.xlsx` V1 | 200 y previsualización normalizada no persistida | 401/403 identidad; 413 tamaño; 415 formato; 422 estructura |
+| `GET /api/v1/body-measurement-sources` | Bearer y paginación | 200 y fuentes propias | 401/403 identidad; 422 filtros |
+| `POST /api/v1/body-measurement-sources` | Bearer y nombre, clave lógica y tipo | 201 y fuente propia | 409 clave duplicada; 422 entrada |
+| `POST /api/v1/body-measurement-imports/plan` | Bearer, archivo, fuente, fingerprint y decisiones multipart | 200 y clasificación sin escritura | 404 fuente; 409 archivo cambiado; 422 decisiones |
+| `POST /api/v1/body-measurement-imports` | Plan confirmado más `Idempotency-Key` | 201 nueva o 200 replay | 404 fuente; 409 conflicto; 422 plan bloqueado |
+| `GET /api/v1/body-measurement-imports` | Bearer, paginación y filtros | 200 e importaciones propias | 401/403; 422 filtros |
+| `GET /api/v1/body-measurement-imports/{id}` | Bearer | 200 e importación propia | 404 no visible |
+| `DELETE /api/v1/body-measurement-imports/{id}` | Bearer | 204 y reversión idempotente | 404 no visible; 409 versión posterior |
+| `GET /api/v1/body-measurement-reviews` | Bearer, paginación, fuente, fechas y vigencia | 200 y revisiones propias | 401/403; 422 filtros |
+| `GET /api/v1/body-measurement-reviews/{id}` | Bearer | 200 y valores normalizados propios | 404 no visible |
 
 El usuario público contiene `id`, `email`, `is_active`, `created_at` y
 `updated_at`. Ningún contrato expone la contraseña ni `password_hash`. El
@@ -103,9 +112,41 @@ advertencias, errores bloqueantes, métricas desconocidas, celdas ignoradas y
 totales. Excluye nombre del archivo, identidad hallada, celdas arbitrarias,
 rutas temporales, `user_id` y tokens.
 
-La petición no persiste nada. 3B.2B deberá volver a recibir y analizar el
-archivo para confirmar y comparar el fingerprint; el JSON de previsualización
-no será una fuente autorizada para escribir datos.
+La petición de previsualización no persiste nada. 3B.2B vuelve a recibir y
+analizar el archivo tanto en `/plan` como al confirmar. El fingerprint de
+previsualización debe coincidir y el fingerprint confirmado se calcula a
+partir de las decisiones normalizadas. El JSON de previsualización y los
+valores enviados por el cliente nunca son una fuente autorizada para escribir.
+
+### Planificación, confirmación e historial corporal
+
+`/plan` clasifica cada revisión como `new`, `identical`, `modified`, `blocked`
+o `excluded` y devuelve la versión del historial de la fuente. Las decisiones
+tipadas pueden resolver el año, aceptar la unidad canónica, excluir revisiones
+o métricas, desambiguar identidades y aceptar expresamente una nueva versión.
+Los modelos rechazan campos extra.
+
+La confirmación exige el mismo archivo, fingerprints, versión de historial,
+decisiones e `Idempotency-Key`. Bajo bloqueo de la fuente, una misma clave con
+el mismo digest devuelve 200 y el resultado previo; reutilizarla con otra
+petición devuelve 409. Un historial obsoleto o una revisión modificada sin
+aceptación también devuelve 409. La operación completa es transaccional.
+
+Las listas usan `limit` y `offset`; importaciones admiten fuente, estado y
+rango temporal, y revisiones admiten fuente, rango de fecha de medición y
+vigencia. La propiedad procede exclusivamente del bearer. Un identificador de
+otro usuario se comporta como no visible (404), sin admitir `user_id` en path,
+query, formulario ni respuesta.
+
+La reversión es `DELETE` explícito. Elimina las revisiones creadas por esa
+importación, restaura predecesoras y marca el lote como revertido. Si una
+versión posterior depende de él devuelve 409; repetir una reversión ya aplicada
+devuelve 204 sin efectos adicionales.
+
+CORS mantiene los orígenes explícitos existentes, añade `DELETE` a los métodos
+permitidos para solicitar la reversión y admite la cabecera
+`Idempotency-Key` para confirmar desde el navegador; no introduce comodines ni
+amplía orígenes.
 
 ## Autorización
 

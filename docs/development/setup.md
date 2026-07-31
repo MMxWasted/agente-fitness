@@ -2,12 +2,13 @@
 
 ## Alcance
 
-Esta guía cubre la fundación técnica y los bloques 3A.1, 3A.2, 3B.1 y 3B.2A:
+Esta guía cubre la fundación técnica y los bloques 3A.1, 3A.2, 3B.1, 3B.2A y
+3B.2B:
 frontend React con TypeScript, backend FastAPI, PostgreSQL local mediante
 Docker Compose, scripts PowerShell, identidad de usuario, autenticación bearer,
-sesión web renovable, perfil fitness básico y previsualización segura de
-mediciones desde XLSX. Las entidades persistidas siguen siendo únicamente
-`User`, `AuthSession` y `UserProfile`.
+sesión web renovable, perfil fitness básico, previsualización segura de
+mediciones desde XLSX e historial corporal privado, idempotente y versionado.
+El archivo original no se persiste.
 
 ## Requisitos
 
@@ -256,6 +257,11 @@ npm.cmd run dev -- --host 127.0.0.1
 - Perfil propio: `GET http://localhost:8000/api/v1/profile`
 - Crear o reemplazar perfil: `PUT http://localhost:8000/api/v1/profile`
 - Previsualizar mediciones: `POST http://localhost:8000/api/v1/body-measurement-imports/preview`
+- Fuentes de mediciones: `GET/POST http://localhost:8000/api/v1/body-measurement-sources`
+- Planificar importación: `POST http://localhost:8000/api/v1/body-measurement-imports/plan`
+- Confirmar o listar importaciones: `POST/GET http://localhost:8000/api/v1/body-measurement-imports`
+- Consultar revisiones: `GET http://localhost:8000/api/v1/body-measurement-reviews`
+- Revertir importación: `DELETE http://localhost:8000/api/v1/body-measurement-imports/{id}`
 - OpenAPI interactivo: `http://localhost:8000/docs`
 - Esquema OpenAPI: `http://localhost:8000/openapi.json`
 
@@ -272,14 +278,24 @@ exclusivamente en memoria. El login también crea una cookie de refresh
 y logout. Refresh y logout requieren que el navegador proporcione un
 encabezado `Origin` incluido en `CSRF_TRUSTED_ORIGINS`.
 
-La previsualización de mediciones exige el access token bearer y un campo
+La previsualización y confirmación de mediciones exigen el access token bearer y un campo
 multipart `file` con un `.xlsx` sin macros del formato
 `body-measurements-v1`. El backend usa `openpyxl` con `defusedxml`, además de
-límites ZIP propios, y no conserva el archivo ni escribe mediciones en
-PostgreSQL. El fixture sintético reproducible está en
+límites ZIP propios, y nunca conserva el archivo. La previsualización no
+escribe; el plan clasifica sin mutar y la confirmación persiste únicamente
+revisiones y valores normalizados tras volver a analizar el mismo archivo.
+El fixture sintético reproducible está en
 `backend/tests/fixtures/body_measurements/body_measurements_format_v1.xlsx`.
 La fecha `06-03` que contiene es deliberadamente ambigua y produce un error
 bloqueante con el año común solo como propuesta.
+
+Antes de confirmar, crea o selecciona una fuente lógica, resuelve o excluye
+explícitamente las ambigüedades y calcula el plan. La confirmación requiere una
+`Idempotency-Key` de 16 a 128 caracteres; la interfaz la genera y conserva solo
+en memoria para poder repetir de forma segura un fallo de red. Las revisiones
+modificadas requieren aceptar una versión inmutable nueva. La reversión es una
+acción explícita y puede devolver 409 si una versión posterior depende del
+lote.
 
 ## Detener el entorno
 
@@ -442,4 +458,7 @@ anonimizada del formato real y superó `Frontend`, `Backend quality` y
 `PostgreSQL integration` en el pull request #12, ya fusionado en `main`; no
 queda validación remota ni funcional pendiente para 3B.2A. Proveedores de
 identidad externos, objetivos, equipamiento, preferencias, limitaciones y
-demás datos de negocio pertenecen a bloques posteriores.
+demás datos de negocio pertenecen a bloques posteriores. 3B.2B está
+implementado y validado localmente sobre PostgreSQL real; su validación remota
+permanece pendiente hasta ejecutar el pull request. 3B.2C, OneDrive,
+entrenamientos y analítica corporal no forman parte de este bloque.

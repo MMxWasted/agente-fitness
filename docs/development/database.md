@@ -6,7 +6,9 @@ El bloque 2B.1 incorpora PostgreSQL local, conexión con SQLAlchemy 2 y
 migraciones Alembic. El bloque 3A.1 añade la primera entidad persistida:
 la identidad técnica `User`. El bloque 3A.2 añade `AuthSession` para renovar
 y revocar sesiones web. El bloque 3B.1 añade el perfil privado `UserProfile`
-sin incorporar otros dominios fitness.
+sin incorporar otros dominios fitness. El bloque 3B.2B añade el historial
+corporal privado mediante fuentes, importaciones, revisiones y valores
+normalizados, sin ampliar `UserProfile`.
 
 ## Decisiones de implementación
 
@@ -41,6 +43,16 @@ nombre visible, fecha y altura opcionales, experiencia, zona horaria, unidades
 y timestamps. La FK usa `ON DELETE CASCADE`; las restricciones `CHECK` cierran
 altura, experiencia y unidades. La unicidad proporciona el índice necesario
 para consultar el único perfil del usuario sin duplicar otro índice.
+
+La revisión `20260731_0005` crea `body_measurement_sources`,
+`body_measurement_imports`, `body_measurement_reviews` y
+`body_measurement_values`. Sus claves compuestas impiden enlazar recursos de
+propietarios o fuentes diferentes; todas las rutas desde `users` usan
+`ON DELETE CASCADE`. Los valores usan `NUMERIC(14,6)` y catálogos cerrados por
+`CHECK`. Un índice parcial único garantiza una sola revisión vigente por
+identidad, mientras la combinación identidad-versión y el enlace a la
+predecesora conservan el historial inmutable. La migración es reversible y no
+crea datos.
 
 ## Contratos de diagnóstico
 
@@ -147,10 +159,17 @@ validar la migración y la suite real de perfiles en el pull request #10; los
 tres jobs finalizaron correctamente y el pull request fue fusionado en
 `main`.
 
+En 3B.2B, la validación local sobre PostgreSQL real cubre migración a `head`,
+reversibilidad, constraints, clasificación nueva/idéntica/modificada,
+idempotencia, bloqueo concurrente de fuente, aislamiento entre usuarios,
+versionado, reversión y borrado en cascada. La validación remota de los tres
+jobs queda pendiente del pull request.
+
 ## Límites actuales
 
 Solo existen los modelos, repositorios y servicios necesarios para identidad,
-autenticación, gestión de sesión y perfil básico. No existen objetivos,
-equipamiento, preferencias, limitaciones, historial corporal, otras entidades
-fitness, seeds ni Agente Fitness. Tampoco se define una topología de
-producción: esas decisiones pertenecen a bloques posteriores.
+autenticación, gestión de sesión, perfil básico e historial corporal importado.
+No existen analítica corporal, objetivos, equipamiento, preferencias,
+limitaciones, otras entidades fitness, seeds ni Agente Fitness. Tampoco se
+define sincronización con OneDrive, integración con entrenamientos ni una
+topología de producción: esas decisiones pertenecen a bloques posteriores.

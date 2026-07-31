@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 from app.api.dependencies.auth import get_current_user
 from app.core.config import get_settings
 from app.core.security import create_access_token
-from app.db.base import Base
 from app.db.session import get_db_session
 from app.main import app
 from app.models.user import User
@@ -109,7 +108,9 @@ def test_preview_requires_a_valid_active_bearer_identity() -> None:
 
 
 def test_preview_returns_safe_normalized_content_without_persistence() -> None:
+    session = Mock(spec=Session)
     app.dependency_overrides[get_current_user] = build_user
+    app.dependency_overrides[get_db_session] = build_session_override(session)
 
     response = upload_fixture(filename="private-person-name.xlsx")
 
@@ -123,7 +124,7 @@ def test_preview_returns_safe_normalized_content_without_persistence() -> None:
     assert "user_id" not in response.text
     assert "private-person-name" not in response.text
     assert "access_token" not in response.text
-    assert not any("measurement" in table_name for table_name in Base.metadata.tables)
+    assert session.mock_calls == []
 
 
 def test_preview_rejects_invalid_multipart_format_and_content() -> None:
@@ -177,3 +178,33 @@ def test_openapi_documents_preview_security_and_closed_contract() -> None:
     assert "/health" in paths
     assert "/ready" in paths
     assert "/api/v1/profile" in paths
+    assert "/api/v1/body-measurement-sources" in paths
+    assert "/api/v1/body-measurement-imports/plan" in paths
+    assert "/api/v1/body-measurement-imports/{import_id}" in paths
+    assert "/api/v1/body-measurement-reviews" in paths
+    assert "/api/v1/body-measurement-reviews/{review_id}" in paths
+    for path in (
+        "/api/v1/body-measurement-sources",
+        "/api/v1/body-measurement-imports/plan",
+        "/api/v1/body-measurement-imports",
+        "/api/v1/body-measurement-imports/{import_id}",
+        "/api/v1/body-measurement-reviews",
+        "/api/v1/body-measurement-reviews/{review_id}",
+    ):
+        assert "user_id" not in str(paths[path])
+
+
+def test_cors_allows_delete_only_for_the_configured_frontend_origin() -> None:
+    response = client.options(
+        "/api/v1/body-measurement-imports/00000000-0000-0000-0000-000000000000",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "DELETE",
+            "Access-Control-Request-Headers": "idempotency-key",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == ("http://localhost:5173")
+    assert "DELETE" in response.headers["access-control-allow-methods"]
+    assert "Idempotency-Key" in response.headers["access-control-allow-headers"]

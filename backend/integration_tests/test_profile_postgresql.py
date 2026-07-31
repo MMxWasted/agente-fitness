@@ -155,7 +155,7 @@ def test_profile_migration_is_at_head_with_real_constraints() -> None:
 
     with get_engine().connect() as connection:
         revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-    assert revision == "20260730_0004"
+    assert revision == "20260731_0005"
 
 
 def test_profile_api_is_idempotent_and_isolated_between_users(

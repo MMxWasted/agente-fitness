@@ -7,9 +7,10 @@ fundación técnica ya materializa frontend, backend y persistencia local; el
 bloque 3A.1 añade identidad y autenticación backend, y 3A.2 incorpora gestión
 de sesión renovable e interfaz mínima de login. El bloque 3B.1 materializa el
 perfil fitness básico privado. 3B.2A añade un flujo autenticado de lectura y
-previsualización XLSX sin persistencia; las demás capas fitness y decisiones
-futuras continúan siendo conceptuales y deberán respaldarse con ADR cuando
-corresponda.
+previsualización XLSX. 3B.2B añade planificación, confirmación idempotente,
+persistencia histórica normalizada, consulta y reversión, con validación local
+completa y CI remota pendiente; las demás capas fitness y decisiones futuras
+continúan siendo conceptuales y deberán respaldarse con ADR cuando corresponda.
 
 ## Objetivos arquitectónicos
 
@@ -54,14 +55,15 @@ flowchart LR
 - Backend: propuesta de API con rutas, esquemas, servicios de dominio, repositorios y lógica de control.
 - Persistencia: PostgreSQL local con una base técnica síncrona de SQLAlchemy 2,
   Psycopg 3 y Alembic; están materializadas `User`, `AuthSession` y
-  `UserProfile`.
+  `UserProfile`, además de las cuatro entidades del historial corporal.
 - Autenticación: correo y contraseña Argon2id con access token JWT bearer,
   junto con sesión web renovable según ADR-005 y ADR-013.
 - Perfil: recurso privado uno a uno, servido mediante rutas, servicio y
   repositorio separados y propiedad derivada del usuario autenticado.
-- Importación corporal: adaptador XLSX V1 y catálogo normalizado que validan y
-  previsualizan en memoria; no existen todavía modelos ni repositorios de
-  mediciones.
+- Importación corporal: adaptador XLSX V1 y catálogo normalizado para
+  previsualizar y reanalizar, servicio de preparación determinista, repositorio
+  privado y entidades separadas para fuente, importación, revisión y valor.
+  El servicio bloquea por fuente y versiona cambios sin sobrescritura.
 - Analítica determinista: servicios independientes de cálculo de métricas.
 - Motor determinista de rutinas: lógica explícita para generar borradores de rutina.
 - Agente Fitness: un único agente orquestador con herramientas limitadas.

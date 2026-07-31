@@ -81,15 +81,28 @@ resultados de importación no deberán aparecer en logs ordinarios.
 
 En 3B.2A el usuario autenticado puede enviar manualmente un `.xlsx` conocido
 para previsualizarlo. El backend lo procesa durante la petición, cierra el
-recurso en `finally` y no conserva el original, la previsualización ni valores
-en PostgreSQL o almacenamiento permanente. La respuesta no incluye nombres
+recurso en `finally` y no conserva el original ni la previsualización. La
+respuesta no incluye nombres
 personales encontrados, nombre físico del archivo, celdas arbitrarias,
 `user_id`, tokens ni rutas temporales. El frontend conserva el `File` solo en
 memoria React y no lo escribe en Web Storage, IndexedDB o cookies.
 
-La futura confirmación volverá a analizar el archivo; una integración con
-OneDrive deberá aplicar minimización, autorización por propietario y registro
-técnico sin valores corporales.
+En 3B.2B, plan y confirmación vuelven a analizar el archivo. Solo la
+confirmación persiste fuentes, metadatos técnicos mínimos de importación,
+revisiones y valores normalizados; no conserva el Excel, la previsualización,
+la clave idempotente en claro ni celdas desconocidas. Los hashes y fingerprints
+permiten idempotencia e integridad, no sustituyen los controles de acceso.
+
+Toda consulta y mutación filtra por el propietario derivado del access token.
+Los identificadores ajenos no son visibles, las respuestas omiten `user_id` y
+el borrado de la cuenta elimina el historial en cascada. La reversión requiere
+una acción explícita en la interfaz y no escribe valores corporales en logs.
+El frontend mantiene el `File` y la clave idempotente solo en memoria hasta
+finalizar o abandonar el flujo.
+
+Una integración con OneDrive deberá aplicar minimización, autorización por
+propietario y registro técnico sin valores corporales; continúa fuera de
+3B.2B, igual que la analítica y la integración con entrenamientos.
 
 ## Prompts y conversaciones
 

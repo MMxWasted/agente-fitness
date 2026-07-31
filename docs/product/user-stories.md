@@ -185,6 +185,38 @@
 6. El resultado incluye un fingerprint determinista que una futura
    confirmación deberá recalcular.
 
+### MEAS-001B — Importar y consultar historial corporal
+
+- Historia: Como usuario autenticado, quiero confirmar revisiones de un Excel
+  conocido y consultar mi historial privado para conservar mediciones
+  normalizadas sin duplicados ni sobrescrituras.
+- Prioridad: Must
+- Fase: 3, bloque 3B.2B
+- Dependencias: AUTH-002 y MEAS-001A
+- Estado: Completed locally — implementación y validación local completas;
+  validación remota pendiente del pull request.
+
+#### Criterios de aceptación
+
+1. El usuario selecciona o crea una fuente lógica propia y resuelve o excluye
+   explícitamente fechas, unidades, duplicados y elementos desconocidos.
+2. El backend reanaliza el archivo al planificar y confirmar; no acepta como
+   autoridad valores enviados en JSON ni conserva el Excel original.
+3. Una clave de identidad estable clasifica cada revisión como nueva, idéntica
+   o modificada; la identidad se mantiene separada del hash de contenido.
+4. Una revisión modificada solo se guarda tras aceptación explícita y crea una
+   nueva versión inmutable con una única versión vigente.
+5. Los reintentos con la misma `Idempotency-Key` y petición devuelven el mismo
+   resultado, y un uso distinto de la clave produce 409.
+6. El usuario puede listar sus fuentes, importaciones y revisiones, consultar
+   valores normalizados y revertir una importación propia cuando no rompe una
+   versión posterior.
+7. Todos los recursos se filtran por el propietario del access token; los
+   recursos ajenos no son visibles y el borrado de cuenta elimina el historial
+   en cascada.
+8. El frontend conserva el `File` y la clave idempotente solo en memoria y
+   exige confirmación explícita antes de persistir o revertir.
+
 ### MEAS-001 — Registrar peso y medidas
 
 - Historia: Como usuario, quiero registrar mi peso y medidas corporales para seguir mi progreso físico.

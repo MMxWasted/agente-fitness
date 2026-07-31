@@ -28,13 +28,14 @@ npm.cmd run build
 - `build` comprueba tipos y genera el bundle de Vite.
 
 Las pruebas del frontend simulan los servicios de salud, autenticación, perfil
-y previsualización XLSX; no dependen de un backend real. Cubren renderizado,
+e historial XLSX; no dependen de un backend real. Cubren renderizado,
 disponibilidad de la API, login correcto e incorrecto, restauración y
 expiración de sesión, fallos de red, logout, perfil, selección y validación del
 archivo, análisis, agrupación por revisión y categoría, advertencias, errores
 bloqueantes, métricas desconocidas, reintento y cambio de archivo. También
-comprueban que el access token y el `File` no se persisten en Web Storage ni se
-representa el token en el DOM.
+comprueban fuentes, decisiones, plan, confirmación, historial, detalle y
+reversión, y que el access token, el `File` y la clave idempotente no se
+persisten en Web Storage ni se representa el token en el DOM.
 
 ## Backend
 
@@ -320,7 +321,7 @@ proyecto.
 | --- | --- | --- |
 | `Frontend` | Instalación bloqueada, lint, tipos, tests y build | Comandos de [Frontend](#frontend) |
 | `Backend quality` | Sincronización bloqueada, Ruff, formato, mypy y pytest | Comandos de [Backend](#backend) |
-| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación, sesiones y perfiles reales, regresión de la previsualización sin tablas de mediciones, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
+| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación, sesiones, perfiles e historial corporal reales, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
 
 Los tres jobs mantienen los nombres `Frontend`, `Backend quality` y
 `PostgreSQL integration`. La fundación 2B ya fue validada en GitHub. En el
@@ -338,6 +339,10 @@ En el pull request #12 del bloque 3B.2A, `Frontend`, `Backend quality` y
 contrastó con una copia anonimizada que conserva la estructura técnica del
 Excel real. El pull request fue fusionado en `main`; no queda validación
 remota ni funcional pendiente para 3B.2A.
+
+3B.2B está implementado y validado localmente. Su validación en los jobs
+`Frontend`, `Backend quality` y `PostgreSQL integration` permanece pendiente
+hasta ejecutar el pull request de este bloque.
 
 El job de integración usa `postgres:18.4` como service container. La base,
 usuario y contraseña se definen como valores efímeros exclusivos de CI y no
@@ -689,3 +694,71 @@ En el pull request #12 de 3B.2A, `Frontend`, `Backend quality` y
 contrastó con una copia anonimizada que conserva la estructura técnica del
 Excel real y el pull request fue fusionado en `main`; no queda validación
 remota ni funcional pendiente para 3B.2A.
+
+## Verificación completa del bloque 3B.2B
+
+3B.2B añade la revisión Alembic `20260731_0005` y requiere PostgreSQL real.
+Con la base dedicada `agente_fitness_test` y las variables de la sección de
+integración, ejecuta:
+
+```powershell
+Set-Location frontend
+npm.cmd ci
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run test
+npm.cmd run build
+
+Set-Location ..\backend
+uv sync --locked
+uv lock --check
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy app tests
+uv run pytest
+
+uv run alembic upgrade head
+uv run alembic current --check-heads
+uv run alembic check
+uv run alembic downgrade 20260730_0004
+uv run alembic upgrade head
+uv run pytest integration_tests -m integration
+
+Set-Location ..
+git diff --check
+git status --short --untracked-files=all
+```
+
+La validación debe confirmar:
+
+- cuatro tablas normalizadas, UUID, timestamps UTC, `NUMERIC(14,6)`, claves
+  compuestas por propietario y borrado de cuenta en cascada;
+- una única versión vigente por identidad, cadena inmutable y migración
+  reversible sin operaciones Alembic pendientes;
+- identidad de revisión estable separada del hash de contenido;
+- revisiones nuevas, idénticas, modificadas, bloqueadas y excluidas;
+- reanálisis del archivo en plan y confirmación, fingerprints coherentes y
+  rechazo de decisiones o valores no autorizados;
+- replay 200 con la misma `Idempotency-Key` y digest, 409 al reutilizarla con
+  otra petición y un solo efecto ante reintentos concurrentes;
+- bloqueo por fuente: dos confirmaciones paralelas con el mismo historial no
+  pueden ganar ambas;
+- rollback total ante un fallo genérico después de iniciar la persistencia,
+  sin importación, revisiones ni incremento de `history_version` residuales;
+- versionado explícito, consulta de vigentes y detalle normalizado;
+- reversión transaccional, restauración de predecesora, repetición sin efectos
+  y 409 cuando existe una versión posterior dependiente;
+- 404 para fuentes, importaciones y revisiones de otro usuario;
+- archivo, nombre físico, claves en claro, tokens y valores corporales ausentes
+  de logs, Web Storage y respuestas técnicas;
+- regresión completa de autenticación, sesión, perfil y previsualización 3B.2A.
+
+La validación local de 3B.2B finalizó correctamente con 150 pruebas backend,
+45 pruebas frontend y 16 pruebas de integración sobre PostgreSQL real. Se
+comprobaron migración, downgrade y nuevo upgrade, idempotencia concurrente,
+conflicto concurrente por versión, rollback forzado, aislamiento, versionado,
+reversión y borrado en cascada.
+Docker CLI no estaba instalado en esta estación, pero PostgreSQL local estaba
+disponible y la suite usó exclusivamente la base dedicada
+`agente_fitness_test`. La validación remota de los tres jobs continúa pendiente
+del pull request.

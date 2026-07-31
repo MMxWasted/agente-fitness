@@ -93,19 +93,22 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
       validado y fusionado; `Frontend`, `Backend quality` y
       `PostgreSQL integration` finalizaron correctamente en el pull request
       #12; sin persistencia).
-    - [ ] 3B.2B — Persistencia e historial de mediciones corporales.
+    - [x] 3B.2B — Persistencia e historial de mediciones corporales
+      (implementado y validado localmente; validación remota pendiente del
+      pull request).
     - [ ] 3B.2C — Analítica corporal determinista.
   - [ ] Implementar validación y autorización por propietario.
 
-3B.2A ofrece una previsualización autenticada con adaptador XLSX versionado,
-catálogo de métricas y controles ZIP/XML, pero descarta el archivo y no crea
-tablas. 3B.2B usará entidades históricas privadas, separadas de
-`user_profiles`, con una sesión por revisión y valores normalizados por
-métrica, categoría, lado y unidad; deberá confirmar reanalizando el archivo,
-preservar procedencia, evitar duplicados, versionar cambios, ofrecer historial
-y permitir revertir importaciones propias. La analítica corporal pertenece a
-3B.2C; la integración con entrenamientos y una posible sincronización con
-OneDrive permanecen para bloques posteriores.
+3B.2A ofrece la previsualización autenticada con adaptador XLSX versionado y
+controles ZIP/XML. 3B.2B reutiliza ese adaptador para reanalizar en el plan y
+la confirmación, y persiste entidades históricas privadas separadas de
+`user_profiles`: fuente, importación, revisión y valor normalizado. La
+identidad estable, el hash de contenido, el bloqueo por fuente y el versionado
+inmutable evitan duplicados y sobrescrituras; las importaciones propias pueden
+consultarse y revertirse transaccionalmente. El archivo original no se
+conserva. La analítica corporal pertenece a 3B.2C; la integración con
+entrenamientos y una posible sincronización con OneDrive permanecen para
+bloques posteriores.
 
 ## Fase 4. Catálogo de ejercicios
 
