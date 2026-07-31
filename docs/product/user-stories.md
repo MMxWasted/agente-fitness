@@ -41,13 +41,16 @@
 - Prioridad: Must
 - Fase: 3
 - Dependencias: AUTH-002
-- Estado: Pending
+- Estado: Completed — implementado y validado localmente en el bloque 3B.1;
+  validación remota pendiente.
 
 #### Criterios de aceptación
 
 1. El usuario puede introducir los datos básicos solicitados por el perfil.
 2. El sistema permite guardar el perfil con información válida.
 3. El sistema rechaza valores inválidos con un mensaje observable.
+4. El perfil solo puede consultarse y actualizarse mediante la identidad
+   autenticada de su propietario.
 
 ## GOAL — Objetivos
 

@@ -14,7 +14,10 @@ import {
   type AccessTokenResponse,
   type AuthenticatedUser,
 } from '../../services/auth'
-import { ApiError } from '../../services/api'
+import {
+  ApiError,
+  type AuthenticatedOperation,
+} from '../../services/api'
 import {
   AuthenticationContext,
   type AuthenticationStatus,
@@ -81,6 +84,13 @@ export function AuthenticationProvider({
     setStatus('anonymous')
   }, [clearRenewalTimer])
 
+  const expireLocalSession = useCallback(() => {
+    clearLocalSession()
+    setMessage(
+      'La sesión ha expirado. Inicia sesión de nuevo para continuar.',
+    )
+  }, [clearLocalSession])
+
   const scheduleRenewal = useCallback(
     (expiresInSeconds: number) => {
       clearRenewalTimer()
@@ -109,10 +119,7 @@ export function AuthenticationProvider({
       accessTokenRef.current = token.access_token
       scheduleRenewal(token.expires_in)
     } catch {
-      clearLocalSession()
-      setMessage(
-        'La sesión ha expirado. Inicia sesión de nuevo para continuar.',
-      )
+      expireLocalSession()
     }
   }
 
@@ -195,6 +202,56 @@ export function AuthenticationProvider({
     }
   }, [clearLocalSession])
 
+  const authenticatedRequest = useCallback(
+    async <T,>(
+      operation: AuthenticatedOperation<T>,
+    ): Promise<T> => {
+      const currentAccessToken = accessTokenRef.current
+      if (currentAccessToken === null) {
+        expireLocalSession()
+        throw new ApiError(401, 'Authentication required')
+      }
+
+      try {
+        return await operation(currentAccessToken)
+      } catch (error) {
+        if (!(error instanceof ApiError)) {
+          throw error
+        }
+        if (error.status === 403) {
+          expireLocalSession()
+          throw error
+        }
+        if (error.status !== 401) {
+          throw error
+        }
+      }
+
+      let token: AccessTokenResponse
+      try {
+        token = await refreshAccessToken()
+      } catch {
+        expireLocalSession()
+        throw new ApiError(401, 'Session expired')
+      }
+
+      accessTokenRef.current = token.access_token
+      scheduleRenewal(token.expires_in)
+      try {
+        return await operation(token.access_token)
+      } catch (error) {
+        if (
+          error instanceof ApiError &&
+          [401, 403].includes(error.status)
+        ) {
+          expireLocalSession()
+        }
+        throw error
+      }
+    },
+    [expireLocalSession, scheduleRenewal],
+  )
+
   const contextValue = useMemo(
     () => ({
       status,
@@ -203,8 +260,17 @@ export function AuthenticationProvider({
       isSubmitting,
       login,
       logout,
+      authenticatedRequest,
     }),
-    [isSubmitting, login, logout, message, status, user],
+    [
+      authenticatedRequest,
+      isSubmitting,
+      login,
+      logout,
+      message,
+      status,
+      user,
+    ],
   )
 
   return (

@@ -8,8 +8,8 @@ Documentar el modelo conceptual de dominio de Agente Fitness, manteniendo el foc
 
 Este documento describe las entidades y relaciones conceptuales necesarias
 para soporte del MVP inicial. `User` está implementada desde 3A.1 y
-`AuthSession` desde 3A.2; el resto continúa siendo diseño futuro y no
-representa tablas existentes.
+`AuthSession` desde 3A.2; `UserProfile` se implementa en 3B.1. El resto
+continúa siendo diseño futuro y no representa tablas existentes.
 
 ## Principios del modelo
 
@@ -30,7 +30,8 @@ erDiagram
     User ||--o{ FitnessGoal : has
     User ||--o{ Routine : owns
     User ||--o{ WorkoutSession : owns
-    User ||--o{ BodyMeasurement : owns
+    User ||--o{ BodyMeasurementReview : owns
+    BodyMeasurementReview ||--o{ BodyMeasurementValue : contains
     User ||--o{ NutritionLog : owns
     User ||--o{ AgentConversation : owns
     User ||--o{ AgentRecommendation : owns
@@ -98,12 +99,24 @@ caducadas se limpian de forma oportunista al crear o renovar sesiones.
 ### UserProfile
 
 - Propósito: almacenar datos básicos de identidad y contexto físico del usuario.
-- Campos conceptuales principales: display_name, birth_date, height, timezone, units_preference.
-- Relaciones: pertenece a un solo User.
-- Reglas de propiedad: propiedad exclusiva del usuario.
-- Restricciones relevantes: un perfil por usuario.
-- Ciclo de vida: creado al completar la inscripción y actualizado según el usuario.
-- Nota: datos fisiológicos adicionales, si se incorporan más adelante, deben quedar como decisión pendiente y sujetarse a minimización y justificación.
+- Campos implementados: id UUID, user_id, display_name, birth_date opcional,
+  height_cm opcional, experience_level, timezone, unit_system, created_at y
+  updated_at.
+- Relaciones: pertenece a un solo User mediante
+  `fk_user_profiles_user_id_users` con `ON DELETE CASCADE`.
+- Reglas de propiedad: propiedad exclusiva derivada del usuario autenticado;
+  la API no acepta `user_id`.
+- Restricciones implementadas: clave primaria `pk_user_profiles`, un perfil por
+  usuario mediante `uq_user_profiles_user_id`, nombre no vacío, altura mayor
+  que cero y como máximo 300 cm, experiencia cerrada a `beginner`,
+  `intermediate` o `advanced`, y unidades `metric` o `imperial`.
+- Ciclo de vida: creado o reemplazado de forma idempotente mediante
+  `PUT /api/v1/profile`; los campos opcionales se eliminan al omitirse o
+  enviarse como `null`.
+- Privacidad: las respuestas no exponen `user_id`; el modelo omite nombre,
+  fecha de nacimiento y altura de su representación técnica.
+- Nota: objetivos, disponibilidad, preferencias, equipamiento, limitaciones,
+  historial corporal y datos médicos permanecen fuera de esta entidad.
 
 ### UserEquipment
 
@@ -213,14 +226,26 @@ caducadas se limpian de forma oportunista al crear o renovar sesiones.
 - Restricciones relevantes: debe conservarse incluso si la rutina cambia y debe registrar el estado completado o fallido.
 - Ciclo de vida: creado y no alterado una vez finalizado el registro.
 
-### BodyMeasurement
+### BodyMeasurementReview y BodyMeasurementValue
 
-- Propósito: almacenar mediciones corporales del usuario.
-- Campos conceptuales principales: user_id, measurement_date, weight, body_fat, waist, chest, arm, hip, thigh.
-- Relaciones: pertenece a un usuario.
-- Reglas de propiedad: propiedad del usuario.
-- Restricciones relevantes: la fecha de calendario debe separarse del timestamp de registro.
-- Ciclo de vida: creado, actualizado o eliminado según la intención del usuario.
+- Estado: diseño futuro del bloque 3B.2; no existen tablas ni contratos.
+- Propósito: representar una revisión corporal fechada y sus observaciones
+  normalizadas sin ampliar `UserProfile`.
+- Campos conceptuales de la revisión: propietario, fecha de la revisión,
+  procedencia y clave idempotente de importación.
+- Campos conceptuales del valor: tipo de métrica, categoría, lado izquierdo,
+  derecho o no aplicable, unidad y valor.
+- Relaciones: cada revisión privada pertenece a un usuario o a su perfil y
+  contiene múltiples valores.
+- Reglas de propiedad: el propietario siempre se deriva del usuario
+  autenticado; ningún usuario puede consultar revisiones ajenas.
+- Restricciones relevantes: una sesión por revisión, fechas válidas,
+  normalización explícita y ausencia de documentos JSON genéricos.
+- Importación futura: detectará columnas nuevas del Excel, evitará duplicados
+  y conservará la procedencia sin acoplar la API o la interfaz al formato del
+  archivo.
+- Evolución posterior: análisis histórico, relación con entrenamientos y
+  posible sincronización con OneDrive.
 
 ### NutritionLog
 

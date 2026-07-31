@@ -2,6 +2,20 @@
 
 Este glosario define los términos del dominio que se utilizarán como referencia de trabajo. Algunas definiciones pueden admitir variantes; en este proyecto se adoptará una interpretación concreta y se documentarán las limitaciones correspondientes.
 
+## Perfil fitness básico
+
+Conjunto mínimo y privado de datos personales estables que contextualiza la
+experiencia del usuario: nombre visible, fecha de nacimiento y altura
+opcionales, nivel de experiencia declarado, zona horaria y sistema de
+unidades. No incluye objetivos, historial corporal, preferencias, equipamiento,
+limitaciones ni datos médicos.
+
+## Nivel de experiencia
+
+Clasificación autodeclarada como `beginner`, `intermediate` o `advanced`. Sirve
+como contexto descriptivo y no demuestra aptitud física, capacidad de
+entrenamiento ni estado de salud.
+
 ## Repetición
 
 Una repetición es una ejecución de un ejercicio en una serie. En este proyecto, la repetición se registrará como una unidad de ejecución y no como un valor implícito de esfuerzo.

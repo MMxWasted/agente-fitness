@@ -1,4 +1,5 @@
 import { createContext } from 'react'
+import type { AuthenticatedOperation } from '../../services/api'
 import type { AuthenticatedUser } from '../../services/auth'
 
 export type AuthenticationStatus =
@@ -13,6 +14,9 @@ export interface AuthenticationContextValue {
   isSubmitting: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  authenticatedRequest: <T>(
+    operation: AuthenticatedOperation<T>,
+  ) => Promise<T>
 }
 
 export const AuthenticationContext =

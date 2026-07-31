@@ -27,11 +27,12 @@ npm.cmd run build
 - `test` ejecuta Vitest y Testing Library con jsdom.
 - `build` comprueba tipos y genera el bundle de Vite.
 
-Las pruebas del frontend simulan los servicios de salud y autenticación; no
-dependen de un backend real. Cubren renderizado, disponibilidad de la API,
-login correcto e incorrecto, restauración y expiración de sesión, fallos de
-red y logout. También comprueban que el access token no se persiste en Web
-Storage ni se representa en el DOM.
+Las pruebas del frontend simulan los servicios de salud, autenticación y
+perfil; no dependen de un backend real. Cubren renderizado, disponibilidad de
+la API, login correcto e incorrecto, restauración y expiración de sesión,
+fallos de red, logout, carga y ausencia de perfil, creación, edición, cambio
+de unidades y errores de guardado. También comprueban que el access token no
+se persiste en Web Storage ni se representa en el DOM.
 
 ## Backend
 
@@ -62,7 +63,12 @@ Las pruebas automatizadas cubren:
 - generación y digest de refresh tokens opacos;
 - atributos y borrado de la cookie `HttpOnly`;
 - validación de orígenes frente a CSRF;
-- creación, rotación, revocación, caducidad y limpieza de sesiones.
+- creación, rotación, revocación, caducidad y limpieza de sesiones;
+- validación, normalización y contrato del perfil fitness básico;
+- creación, consulta, reemplazo idempotente y borrado de valores opcionales
+  del perfil;
+- autenticación, usuario inactivo, aislamiento entre propietarios y
+  resolución controlada de creaciones concurrentes del perfil.
 
 La suite no necesita Docker ni un PostgreSQL externo.
 
@@ -181,7 +187,10 @@ sesiones, y comprueba el esquema PostgreSQL, la revisión Alembic, registro,
 persistencia, hash, duplicado, login, `/users/me`, cuentas inactivas, tokens
 inválidos y los contratos de `/health` y `/ready`. Para 3A.2 añade creación,
 rotación, rechazo del refresh anterior, revocación, caducidad, eliminación en
-cascada y la garantía de un único ganador ante refresh concurrente.
+cascada y la garantía de un único ganador ante refresh concurrente. Para
+3B.1 añade el esquema y las restricciones de `user_profiles`, persistencia,
+actualización, relación uno a uno, aislamiento, borrado en cascada y creación
+concurrente.
 
 Para el recorrido HTTP manual, conserva esas variables y ejecuta en una
 terminal:
@@ -300,7 +309,7 @@ proyecto.
 | --- | --- | --- |
 | `Frontend` | Instalación bloqueada, lint, tipos, tests y build | Comandos de [Frontend](#frontend) |
 | `Backend quality` | Sincronización bloqueada, Ruff, formato, mypy y pytest | Comandos de [Backend](#backend) |
-| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación y sesiones reales, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
+| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación, sesiones y perfiles reales, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
 
 Los tres jobs mantienen los nombres `Frontend`, `Backend quality` y
 `PostgreSQL integration`. La fundación 2B ya fue validada en GitHub. En el
@@ -531,3 +540,67 @@ La revisión manual y automatizada debe confirmar:
 - protección CORS con credenciales solo para orígenes explícitos;
 - migración 3A.2 reversible, en `head` y sin cambios de esquema pendientes;
 - ausencia de secretos, tokens o digests en respuestas, logs, DOM y Git.
+
+## Verificación completa del bloque 3B.1
+
+Ejecuta todas las comprobaciones de calidad y la integración PostgreSQL sobre
+una base exclusiva con sufijo `_test` o `_ci`:
+
+```powershell
+Set-Location frontend
+npm.cmd ci
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run test
+npm.cmd run build
+
+Set-Location ..\backend
+uv sync --locked
+uv lock --check
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy app tests
+uv run pytest
+
+# Con las variables de integración definidas como en la sección anterior:
+uv run alembic upgrade head
+uv run alembic current --check-heads
+uv run alembic downgrade -1
+uv run alembic upgrade head
+uv run alembic current --check-heads
+uv run alembic check
+uv run pytest integration_tests -m integration
+
+Set-Location ..
+git diff --check
+git status --short --untracked-files=all
+```
+
+La validación local de 3B.1 finalizó correctamente con 111 pruebas backend,
+26 pruebas frontend y 11 pruebas de integración sobre PostgreSQL real. El
+ciclo de migración aplicó `head`, bajó de `20260730_0004` a
+`20260730_0003`, volvió a aplicar `head`, confirmó todas las revisiones head
+y no detectó operaciones de esquema pendientes.
+
+La revisión manual y automatizada debe confirmar:
+
+- `GET /api/v1/profile` devuelve exclusivamente el perfil del bearer
+  autenticado o 404 si todavía no existe;
+- `PUT /api/v1/profile` crea o reemplaza el perfil completo y trata los
+  campos opcionales omitidos o nulos como valores eliminados;
+- el cliente no puede enviar `id`, `user_id`, `created_at` ni `updated_at`;
+- la altura se almacena en centímetros y la presentación imperial solo se
+  convierte en el frontend;
+- la restricción uno a uno y el servicio resuelven de forma controlada las
+  creaciones concurrentes;
+- la eliminación del usuario borra su perfil en cascada;
+- dos usuarios permanecen aislados;
+- la sesión expirada se trata sin persistir ni exponer el access token;
+- la revisión `20260730_0004` es reversible y no deja cambios de esquema
+  pendientes;
+- no aparecen secretos, tokens, payloads de perfil ni datos personales en
+  logs, DOM o Git.
+
+La ejecución remota de los tres jobs de CI para 3B.1 debe registrarse cuando
+exista el pull request; permanece pendiente mientras el trabajo siga solo en
+esta rama local.

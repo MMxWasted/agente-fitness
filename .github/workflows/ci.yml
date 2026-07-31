@@ -189,7 +189,7 @@ jobs:
           uv run alembic upgrade head
           uv run alembic current --check-heads
 
-      - name: Run PostgreSQL authentication tests
+      - name: Run PostgreSQL integration tests
         working-directory: backend
         shell: bash
         run: uv run pytest integration_tests -m integration

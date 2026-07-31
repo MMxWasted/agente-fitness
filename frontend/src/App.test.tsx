@@ -30,6 +30,12 @@ vi.mock('./services/auth', () => ({
   refreshAccessToken: vi.fn(),
 }))
 
+vi.mock('./features/profile/ProfileSection', () => ({
+  ProfileSection: () => (
+    <section aria-label="Perfil fitness de prueba" />
+  ),
+}))
+
 const checkApiHealthMock = vi.mocked(checkApiHealth)
 const getCurrentUserMock = vi.mocked(getCurrentUser)
 const loginMock = vi.mocked(login)
