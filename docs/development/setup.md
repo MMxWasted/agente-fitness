@@ -418,7 +418,9 @@ remota de 3A.1 también finalizó correctamente en el pull request #6 mediante
 los jobs `Frontend`, `Backend quality` y `PostgreSQL integration`. La sesión
 web renovable de 3A.2 fue validada localmente y por esos mismos tres jobs en el
 pull request #8, ya fusionado en `main`; no queda validación remota pendiente
-para el bloque. El perfil básico de 3B.1 está implementado y validado
-localmente; su validación remota continúa pendiente. Proveedores de identidad
-externos, objetivos, equipamiento, preferencias, limitaciones y demás datos de
-negocio pertenecen a bloques posteriores.
+para el bloque. El perfil básico de 3B.1 fue validado por `Frontend`,
+`Backend quality` y `PostgreSQL integration` en el pull request #10, ya
+fusionado en `main`; tampoco queda validación remota pendiente para este
+bloque. Proveedores de identidad externos, objetivos, equipamiento,
+preferencias, limitaciones y demás datos de negocio pertenecen a bloques
+posteriores.

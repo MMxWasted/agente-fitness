@@ -41,8 +41,8 @@
 - Prioridad: Must
 - Fase: 3
 - Dependencias: AUTH-002
-- Estado: Completed — implementado y validado localmente en el bloque 3B.1;
-  validación remota pendiente.
+- Estado: Completed — implementado, validado por los tres jobs de CI en el
+  pull request #10 y fusionado en `main`.
 
 #### Criterios de aceptación
 

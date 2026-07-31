@@ -84,8 +84,9 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
   - [x] Implementar gestión de sesión (bloque 3A.2 implementado, validado y
     fusionado; `Frontend`, `Backend quality` y `PostgreSQL integration`
     finalizaron correctamente en el pull request #8).
-  - [x] Implementar perfil fitness (bloque 3B.1 implementado y validado
-    localmente; validación remota pendiente).
+  - [x] Implementar perfil fitness (bloque 3B.1 implementado, validado y
+    fusionado; `Frontend`, `Backend quality` y `PostgreSQL integration`
+    finalizaron correctamente en el pull request #10).
   - [ ] 3B.2 — Historial de mediciones corporales e importación desde Excel.
   - [ ] Implementar validación y autorización por propietario.
 

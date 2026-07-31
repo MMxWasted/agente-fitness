@@ -601,6 +601,7 @@ La revisión manual y automatizada debe confirmar:
 - no aparecen secretos, tokens, payloads de perfil ni datos personales en
   logs, DOM o Git.
 
-La ejecución remota de los tres jobs de CI para 3B.1 debe registrarse cuando
-exista el pull request; permanece pendiente mientras el trabajo siga solo en
-esta rama local.
+En el pull request #10 de 3B.1, `Frontend`, `Backend quality` y
+`PostgreSQL integration` finalizaron correctamente. El job de PostgreSQL
+incluyó la migración y la suite real de perfiles, y el pull request fue
+fusionado en `main`; no queda validación remota pendiente para 3B.1.
