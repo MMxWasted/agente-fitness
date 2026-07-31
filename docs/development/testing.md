@@ -27,12 +27,14 @@ npm.cmd run build
 - `test` ejecuta Vitest y Testing Library con jsdom.
 - `build` comprueba tipos y genera el bundle de Vite.
 
-Las pruebas del frontend simulan los servicios de salud, autenticación y
-perfil; no dependen de un backend real. Cubren renderizado, disponibilidad de
-la API, login correcto e incorrecto, restauración y expiración de sesión,
-fallos de red, logout, carga y ausencia de perfil, creación, edición, cambio
-de unidades y errores de guardado. También comprueban que el access token no
-se persiste en Web Storage ni se representa en el DOM.
+Las pruebas del frontend simulan los servicios de salud, autenticación, perfil
+y previsualización XLSX; no dependen de un backend real. Cubren renderizado,
+disponibilidad de la API, login correcto e incorrecto, restauración y
+expiración de sesión, fallos de red, logout, perfil, selección y validación del
+archivo, análisis, agrupación por revisión y categoría, advertencias, errores
+bloqueantes, métricas desconocidas, reintento y cambio de archivo. También
+comprueban que el access token y el `File` no se persisten en Web Storage ni se
+representa el token en el DOM.
 
 ## Backend
 
@@ -68,7 +70,16 @@ Las pruebas automatizadas cubren:
 - creación, consulta, reemplazo idempotente y borrado de valores opcionales
   del perfil;
 - autenticación, usuario inactivo, aislamiento entre propietarios y
-  resolución controlada de creaciones concurrentes del perfil.
+  resolución controlada de creaciones concurrentes del perfil;
+- estructura del fixture XLSX, rangos combinados, secciones y revisiones;
+- fechas completas o sin año, `Decimal` con coma o punto, vacío frente a cero,
+  unidades, alias y lateralidad;
+- métricas desconocidas, fórmulas, booleanos, NaN, infinito y rangos básicos;
+- tamaño, extensión, MIME, firma y estructura ZIP/OOXML, entradas, tamaño
+  descomprimido, rutas, cifrado, protección y XML inseguro;
+- estabilidad y sensibilidad del fingerprint;
+- contrato bearer multipart, 401, 403, 413, 415 y 422 sin datos arbitrarios,
+  `user_id`, tokens ni persistencia.
 
 La suite no necesita Docker ni un PostgreSQL externo.
 
@@ -309,7 +320,7 @@ proyecto.
 | --- | --- | --- |
 | `Frontend` | Instalación bloqueada, lint, tipos, tests y build | Comandos de [Frontend](#frontend) |
 | `Backend quality` | Sincronización bloqueada, Ruff, formato, mypy y pytest | Comandos de [Backend](#backend) |
-| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación, sesiones y perfiles reales, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
+| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación, sesiones y perfiles reales, ausencia de tablas de mediciones, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
 
 Los tres jobs mantienen los nombres `Frontend`, `Backend quality` y
 `PostgreSQL integration`. La fundación 2B ya fue validada en GitHub. En el
@@ -605,3 +616,67 @@ En el pull request #10 de 3B.1, `Frontend`, `Backend quality` y
 `PostgreSQL integration` finalizaron correctamente. El job de PostgreSQL
 incluyó la migración y la suite real de perfiles, y el pull request fue
 fusionado en `main`; no queda validación remota pendiente para 3B.1.
+
+## Verificación completa del bloque 3B.2A
+
+3B.2A no añade migraciones. Ejecuta calidad completa y después la misma suite
+PostgreSQL de regresión para confirmar que autenticación, sesiones y perfil
+continúan funcionando:
+
+```powershell
+Set-Location frontend
+npm.cmd ci
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run test
+npm.cmd run build
+
+Set-Location ..\backend
+uv sync --locked
+uv lock --check
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy app tests
+uv run pytest
+
+# Con las variables de integración definidas en esta guía:
+uv run alembic upgrade head
+uv run alembic current --check-heads
+uv run alembic check
+uv run pytest integration_tests -m integration
+
+Set-Location ..
+git diff --check
+git status --short --untracked-files=all
+```
+
+Comprueba además en PostgreSQL que las únicas tablas propias sigan siendo
+`alembic_version`, `users`, `auth_sessions` y `user_profiles`; 3B.2A no debe
+crear tablas de fuentes, importaciones, revisiones o valores corporales.
+
+La validación local debe confirmar:
+
+- fixture sintético sin identidad, comentarios, enlaces, fórmulas ni
+  propiedades personales;
+- lectura de secciones, fechas, valores numéricos y textos con coma decimal;
+- rechazo de archivos grandes, formatos distintos de `.xlsx`, contenedores
+  inseguros, protección, macros y fórmulas corporales;
+- 200 para la previsualización válida y errores 401, 403, 413, 415 y 422;
+- OpenAPI sin `user_id` y respuestas sin nombre de archivo, celdas arbitrarias,
+  tokens ni rutas temporales;
+- selector accesible, análisis, agrupación, avisos, bloqueos, desconocidos,
+  errores, reintento y cambio de archivo;
+- ausencia de Web Storage, IndexedDB, cookies y persistencia PostgreSQL para el
+  archivo y sus mediciones;
+- fingerprint estable ante estilos y distinto ante un cambio real.
+
+La validación local de 3B.2A finalizó correctamente con 137 pruebas backend,
+38 pruebas frontend y 12 pruebas de integración sobre PostgreSQL real. El
+ciclo de Alembic bajó hasta `base`, volvió a `head`, no detectó operaciones
+pendientes y la inspección confirmó exclusivamente `alembic_version`, `users`,
+`auth_sessions` y `user_profiles`. Una petición HTTP real autenticada devolvió
+200, adaptador V1, 83 valores reconocidos y ningún `user_id`. Uvicorn se detuvo
+y la base de prueba dedicada se eliminó después de la comprobación.
+
+La validación de GitHub Actions de la rama de 3B.2A permanece pendiente hasta
+su pull request; no debe documentarse como superada antes de esa ejecución.

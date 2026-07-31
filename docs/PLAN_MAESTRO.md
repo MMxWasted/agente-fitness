@@ -178,10 +178,11 @@ y ejercicios excluidos pertenecen a entidades o bloques separados y no forman
 parte de `UserProfile`.
 
 Peso, composición corporal, pliegues y perímetros tampoco forman parte de
-`UserProfile`. El bloque futuro independiente `3B.2 — Historial de mediciones
-corporales e importación desde Excel` los modelará mediante entidades
-históricas separadas y privadas, sin columnas JSON genéricas ni acoplamiento
-del perfil al formato de una hoja concreta.
+`UserProfile`. El bloque independiente `3B.2 — Historial de mediciones
+corporales e importación desde Excel` empieza en 3B.2A con una previsualización
+segura y sin persistencia. 3B.2B los modelará mediante entidades históricas
+separadas y privadas, sin columnas JSON genéricas ni acoplamiento del perfil al
+formato de una hoja concreta.
 
 ### 4.3 Objetivos
 
@@ -259,10 +260,11 @@ El usuario podrá:
 
 ### 4.7 Peso y medidas corporales
 
-El bloque 3B.2 deberá representar una sesión por revisión fechada. Cada sesión
-podrá contener valores normalizados por tipo de métrica, categoría, lado
-izquierdo, derecho o no aplicable y unidad. Entre las mediciones previstas
-están:
+3B.2A permite analizar manualmente un XLSX conocido y previsualizar las
+revisiones sin guardar el archivo ni los valores. 3B.2B deberá representar una
+sesión por revisión fechada. Cada sesión podrá contener valores normalizados
+por tipo de métrica, categoría, lado izquierdo, derecho o no aplicable y
+unidad. Entre las mediciones previstas están:
 
 * Peso.
 * Datos de bioimpedancia.
@@ -270,10 +272,12 @@ están:
 * Perímetros corporales.
 * Valores bilaterales cuando corresponda.
 
-La importación futura desde Excel deberá ser idempotente, detectar nuevas
-columnas de revisión y conservar procedencia y fecha sin asumir que el archivo
-es la fuente permanente ni acoplar el frontend a su estructura. La aplicación
-podrá mostrar posteriormente:
+La previsualización utiliza un adaptador versionado, hace visibles fechas o
+unidades ambiguas y calcula un fingerprint normalizado. La confirmación futura
+deberá reanalizar el Excel, comprobar ese fingerprint, ser idempotente, detectar
+nuevas columnas de revisión y conservar procedencia y fecha sin asumir que el
+archivo es la fuente permanente ni acoplar el frontend a su estructura. La
+aplicación podrá mostrar posteriormente:
 
 * Evolución temporal.
 * Comparación entre fechas.
@@ -591,7 +595,8 @@ separados y pendientes.
 
 ### 9.2.1 BodyMeasurementReview y BodyMeasurementValue
 
-Diseño futuro del bloque 3B.2, todavía no implementado:
+Persistencia futura de 3B.2B, todavía no implementada. 3B.2A solo materializa
+la lectura segura y el contrato de previsualización:
 
 * `BodyMeasurementReview` representará una revisión fechada y conservará su
   propietario y procedencia.
@@ -603,7 +608,9 @@ Diseño futuro del bloque 3B.2, todavía no implementado:
   se resolverá desde el usuario autenticado.
 * Una clave de procedencia estable deberá permitir importación idempotente y
   detección de nuevas revisiones sin duplicar las existentes.
-* No se define todavía un esquema definitivo, importador, sincronización,
+* La confirmación deberá volver a analizar el archivo y comparar el fingerprint
+  con la previsualización; el Excel original no se conservará.
+* No se define todavía un esquema definitivo, confirmación, sincronización,
   analítica ni integración con OneDrive.
 
 ### 9.3 UserEquipment
@@ -1275,11 +1282,12 @@ Resultado esperado:
 
 Estado operativo: 3A.1 implementa identidad y access token; 3A.2 implementa la
 gestión de sesión web, renovación, revocación e interfaz mínima; 3B.1
-implementa el perfil fitness básico privado. Objetivos, equipamiento,
-preferencias, limitaciones y autorización general por propietario continúan
-pendientes. El bloque futuro 3B.2 gestionará el historial privado de mediciones
-corporales y su importación idempotente desde Excel mediante entidades
-separadas; no amplía `UserProfile` ni está implementado en 3B.1.
+implementa el perfil fitness básico privado; 3B.2A implementa lectura segura y
+previsualización autenticada de un XLSX conocido sin persistencia. Objetivos,
+equipamiento, preferencias, limitaciones y autorización general por
+propietario continúan pendientes. 3B.2B gestionará la confirmación idempotente
+y el historial privado mediante entidades separadas; 3B.2C cubrirá historial,
+reversión e integraciones. Ninguna de estas entregas amplía `UserProfile`.
 
 ### Fase 4 — Catálogo de ejercicios
 

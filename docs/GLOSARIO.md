@@ -112,6 +112,26 @@ El patrón de movimiento describe la forma general de ejecución del ejercicio, 
 
 Una medición corporal es un registro de variables físicas del usuario, como peso, grasa corporal, cintura, pecho, brazo, cadera o muslo. Se utilizará para seguimiento evolutivo.
 
+## Revisión corporal
+
+Una revisión corporal es el conjunto fechado de valores reportados en una
+misma toma. Puede incluir bioimpedancia, pliegues y perímetros, con lado
+izquierdo, derecho o no aplicable. En 3B.2A solo se previsualiza; todavía no
+existe una entidad persistida.
+
+## Adaptador de mediciones XLSX
+
+Un adaptador de mediciones XLSX es un parser específico y versionado para una
+estructura conocida. `body-measurements-v1` reconoce el fixture V1 mediante
+alias controlados y no pretende importar hojas arbitrarias.
+
+## Fingerprint de previsualización
+
+El fingerprint de previsualización es un SHA-256 determinista de las revisiones
+y mediciones normalizadas, sus unidades, lados y ambigüedades relevantes.
+Excluye estilos, nombre físico y propiedades del documento. 3B.2B deberá
+recalcularlo desde el archivo antes de confirmar.
+
 ## Media móvil
 
 Una media móvil es una agregación temporal que suaviza fluctuaciones en series de datos. Se utilizará como concepto de analítica, pero su implementación concreta deberá documentarse con claridad.

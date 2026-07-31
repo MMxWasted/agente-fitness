@@ -28,6 +28,7 @@ Un Architecture Decision Record (ADR) documenta una decisión arquitectónica re
 | ADR-011 | Biblioteca de componentes de interfaz | Proposed | [ADR-011](ADR-011-component-library.md) |
 | ADR-012 | Estrategia de despliegue | Proposed | [ADR-012](ADR-012-deployment-strategy.md) |
 | ADR-013 | Gestión de sesión web renovable | Accepted | [ADR-013](ADR-013-session-management.md) |
+| ADR-014 | Importación manual y versionada de mediciones desde XLSX | Accepted | [ADR-014](ADR-014-body-measurement-xlsx-import.md) |
 
 ## Reglas para nuevos ADR
 

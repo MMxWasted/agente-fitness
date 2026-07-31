@@ -159,12 +159,37 @@
 
 ## MEAS — Peso y medidas
 
+### MEAS-001A — Previsualizar mediciones desde Excel
+
+- Historia: Como usuario autenticado, quiero previsualizar las revisiones de
+  un Excel conocido para revisar su interpretación antes de guardar datos.
+- Prioridad: Must
+- Fase: 3, bloque 3B.2A
+- Dependencias: AUTH-002
+- Estado: Completed locally — la validación remota de la rama permanece
+  pendiente.
+
+#### Criterios de aceptación
+
+1. El usuario puede seleccionar un `.xlsx` sin macros de hasta 5 MiB y ver
+   estados de análisis, éxito y error.
+2. El backend valida el contenedor ZIP/OOXML, no ejecuta fórmulas y solo acepta
+   el formato V1 documentado.
+3. La previsualización agrupa revisiones y categorías, identifica métricas y
+   lados, y muestra fechas, unidades, advertencias y errores bloqueantes.
+4. El usuario autenticado se deriva del bearer; el contrato no recibe
+   `user_id`.
+5. El archivo, la previsualización, las revisiones y los valores no se
+   persisten ni se escriben en almacenamiento web.
+6. El resultado incluye un fingerprint determinista que una futura
+   confirmación deberá recalcular.
+
 ### MEAS-001 — Registrar peso y medidas
 
 - Historia: Como usuario, quiero registrar mi peso y medidas corporales para seguir mi progreso físico.
 - Prioridad: Must
 - Fase: 7
-- Dependencias: AUTH-002
+- Dependencias: AUTH-002, MEAS-001A y bloque 3B.2B
 - Estado: Pending
 
 #### Criterios de aceptación

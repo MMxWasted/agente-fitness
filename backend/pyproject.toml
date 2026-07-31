@@ -5,8 +5,10 @@ description = "Minimal FastAPI foundation for Agente Fitness"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.18.5",
+    "defusedxml>=0.7.1",
     "email-validator>=2.3.0",
     "fastapi>=0.141.1",
+    "openpyxl>=3.1.5",
     "psycopg[binary]>=3.3.4",
     "pwdlib[argon2]>=0.3.0",
     "pydantic-settings>=2.14.2",

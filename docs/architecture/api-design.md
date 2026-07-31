@@ -58,6 +58,7 @@ absoluta.
 | `GET /api/v1/users/me` | `Authorization: Bearer <token>` | 200 y usuario público | 401 token o identidad inválidos; 403 cuenta inactiva |
 | `GET /api/v1/profile` | Access token bearer | 200 y perfil propio | 401 token inválido; 403 cuenta inactiva; 404 perfil no creado |
 | `PUT /api/v1/profile` | Access token bearer y perfil completo sin identificadores internos | 200 y perfil creado o reemplazado | 401 token inválido; 403 cuenta inactiva; 422 entrada inválida |
+| `POST /api/v1/body-measurement-imports/preview` | Bearer y `multipart/form-data` con un `.xlsx` V1 | 200 y previsualización normalizada no persistida | 401/403 identidad; 413 tamaño; 415 formato; 422 estructura |
 
 El usuario público contiene `id`, `email`, `is_active`, `created_at` y
 `updated_at`. Ningún contrato expone la contraseña ni `password_hash`. El
@@ -85,6 +86,26 @@ dispositivos no están implementados.
 y `height_cm` son opcionales: omitirlos o enviarlos como `null` elimina su
 valor anterior. La respuesta no expone `user_id`; la propiedad se obtiene
 exclusivamente del sujeto del access token.
+
+### Previsualización XLSX de mediciones
+
+El bloque 3B.2A implementa el contrato definido en
+[ADR-014](../decisions/ADR-014-body-measurement-xlsx-import.md). La petición
+contiene únicamente el campo multipart `file`; no admite `user_id` en path,
+query ni body. MIME se trata como señal auxiliar y el backend valida extensión,
+firma ZIP, estructura OOXML, límites, cifrado, protección, macros, enlaces,
+XML y fórmulas antes de interpretar valores.
+
+La respuesta incluye versión del adaptador, fingerprint, metadatos técnicos
+seguros, revisiones, fechas originales y resueltas, métricas normalizadas,
+lateralidad, decimales serializados como texto, unidades y su fuente,
+advertencias, errores bloqueantes, métricas desconocidas, celdas ignoradas y
+totales. Excluye nombre del archivo, identidad hallada, celdas arbitrarias,
+rutas temporales, `user_id` y tokens.
+
+La petición no persiste nada. 3B.2B deberá volver a recibir y analizar el
+archivo para confirmar y comparar el fingerprint; el JSON de previsualización
+no será una fuente autorizada para escribir datos.
 
 ## Autorización
 

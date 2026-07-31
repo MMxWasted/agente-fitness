@@ -4,6 +4,7 @@ import type { ApiStatus } from './app/api-status'
 import { ApiStatusCard } from './components/ApiStatusCard'
 import { LoginForm } from './features/auth/LoginForm'
 import { useAuthentication } from './features/auth/use-authentication'
+import { BodyMeasurementImportPreview } from './features/measurements/BodyMeasurementImportPreview'
 import { ProfileSection } from './features/profile/ProfileSection'
 import { checkApiHealth } from './services/health'
 
@@ -103,12 +104,16 @@ function App() {
         {authentication.status === 'authenticated' && (
           <ProfileSection />
         )}
+
+        {authentication.status === 'authenticated' && (
+          <BodyMeasurementImportPreview />
+        )}
       </div>
 
       <p className="scope-note">
         El access token se conserva solo en memoria; la cookie de renovación
-        no es accesible desde JavaScript. El perfil es privado y se consulta
-        mediante el access token.
+        no es accesible desde JavaScript. El perfil y la previsualización son
+        privados y se consultan mediante el access token.
       </p>
     </main>
   )

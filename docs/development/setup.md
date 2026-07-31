@@ -2,11 +2,12 @@
 
 ## Alcance
 
-Esta guía cubre la fundación técnica y los bloques 3A.1, 3A.2 y 3B.1: frontend
-React con TypeScript, backend FastAPI, PostgreSQL local mediante Docker Compose,
-scripts PowerShell, identidad de usuario, autenticación bearer, sesión web
-renovable y perfil fitness básico. Las entidades persistidas son `User`,
-`AuthSession` y `UserProfile`.
+Esta guía cubre la fundación técnica y los bloques 3A.1, 3A.2, 3B.1 y 3B.2A:
+frontend React con TypeScript, backend FastAPI, PostgreSQL local mediante
+Docker Compose, scripts PowerShell, identidad de usuario, autenticación bearer,
+sesión web renovable, perfil fitness básico y previsualización segura de
+mediciones desde XLSX. Las entidades persistidas siguen siendo únicamente
+`User`, `AuthSession` y `UserProfile`.
 
 ## Requisitos
 
@@ -122,6 +123,11 @@ El backend utiliza:
 - `DATABASE_URL`: URL completa con esquema `postgresql+psycopg`.
 - `DATABASE_CONNECT_TIMEOUT_SECONDS`: espera máxima inicial por PostgreSQL,
   entre 1 y 30 segundos.
+- `BODY_MEASUREMENT_UPLOAD_MAX_BYTES`: límite del `.xlsx`; 5 MiB por defecto.
+- `BODY_MEASUREMENT_ZIP_MAX_ENTRIES`: máximo de entradas del contenedor OOXML;
+  512 por defecto.
+- `BODY_MEASUREMENT_ZIP_MAX_UNCOMPRESSED_BYTES`: máximo total descomprimido;
+  25 MiB por defecto.
 - `JWT_SECRET_KEY`: secreto de firma con un mínimo de 32 bytes. El ejemplo es
   únicamente un marcador local y `setup-dev.ps1` lo sustituye por un valor
   aleatorio en `backend\.env`.
@@ -249,6 +255,7 @@ npm.cmd run dev -- --host 127.0.0.1
 - Usuario actual: `GET http://localhost:8000/api/v1/users/me`
 - Perfil propio: `GET http://localhost:8000/api/v1/profile`
 - Crear o reemplazar perfil: `PUT http://localhost:8000/api/v1/profile`
+- Previsualizar mediciones: `POST http://localhost:8000/api/v1/body-measurement-imports/preview`
 - OpenAPI interactivo: `http://localhost:8000/docs`
 - Esquema OpenAPI: `http://localhost:8000/openapi.json`
 
@@ -264,6 +271,15 @@ exclusivamente en memoria. El login también crea una cookie de refresh
 `HttpOnly`; el frontend la envía con credenciales únicamente a login, refresh
 y logout. Refresh y logout requieren que el navegador proporcione un
 encabezado `Origin` incluido en `CSRF_TRUSTED_ORIGINS`.
+
+La previsualización de mediciones exige el access token bearer y un campo
+multipart `file` con un `.xlsx` sin macros del formato
+`body-measurements-v1`. El backend usa `openpyxl` con `defusedxml`, además de
+límites ZIP propios, y no conserva el archivo ni escribe mediciones en
+PostgreSQL. El fixture sintético reproducible está en
+`backend/tests/fixtures/body_measurements/body_measurements_format_v1.xlsx`.
+La fecha `06-03` que contiene es deliberadamente ambigua y produce un error
+bloqueante con el año común solo como propuesta.
 
 ## Detener el entorno
 
