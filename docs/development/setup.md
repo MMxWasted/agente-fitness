@@ -437,6 +437,9 @@ pull request #8, ya fusionado en `main`; no queda validación remota pendiente
 para el bloque. El perfil básico de 3B.1 fue validado por `Frontend`,
 `Backend quality` y `PostgreSQL integration` en el pull request #10, ya
 fusionado en `main`; tampoco queda validación remota pendiente para este
-bloque. Proveedores de identidad externos, objetivos, equipamiento,
-preferencias, limitaciones y demás datos de negocio pertenecen a bloques
-posteriores.
+bloque. La previsualización XLSX de 3B.2A fue contrastada con una copia
+anonimizada del formato real y superó `Frontend`, `Backend quality` y
+`PostgreSQL integration` en el pull request #12, ya fusionado en `main`; no
+queda validación remota ni funcional pendiente para 3B.2A. Proveedores de
+identidad externos, objetivos, equipamiento, preferencias, limitaciones y
+demás datos de negocio pertenecen a bloques posteriores.

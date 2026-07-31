@@ -320,7 +320,7 @@ proyecto.
 | --- | --- | --- |
 | `Frontend` | Instalación bloqueada, lint, tipos, tests y build | Comandos de [Frontend](#frontend) |
 | `Backend quality` | Sincronización bloqueada, Ruff, formato, mypy y pytest | Comandos de [Backend](#backend) |
-| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación, sesiones y perfiles reales, ausencia de tablas de mediciones, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
+| `PostgreSQL integration` | Compose, PostgreSQL, Alembic, autenticación, sesiones y perfiles reales, regresión de la previsualización sin tablas de mediciones, `/health` y `/ready` | [Integración local con PostgreSQL](#integración-local-con-postgresql) |
 
 Los tres jobs mantienen los nombres `Frontend`, `Backend quality` y
 `PostgreSQL integration`. La fundación 2B ya fue validada en GitHub. En el
@@ -332,6 +332,12 @@ En el pull request #8 del bloque 3A.2, esos mismos tres jobs finalizaron
 correctamente. `PostgreSQL integration` incluyó la migración y la suite real
 de sesiones sobre PostgreSQL. El pull request fue fusionado en `main`, por lo
 que no queda validación remota pendiente para 3A.2.
+
+En el pull request #12 del bloque 3B.2A, `Frontend`, `Backend quality` y
+`PostgreSQL integration` finalizaron correctamente. El adaptador V1 también se
+contrastó con una copia anonimizada que conserva la estructura técnica del
+Excel real. El pull request fue fusionado en `main`; no queda validación
+remota ni funcional pendiente para 3B.2A.
 
 El job de integración usa `postgres:18.4` como service container. La base,
 usuario y contraseña se definen como valores efímeros exclusivos de CI y no
@@ -678,5 +684,8 @@ pendientes y la inspección confirmó exclusivamente `alembic_version`, `users`,
 200, adaptador V1, 83 valores reconocidos y ningún `user_id`. Uvicorn se detuvo
 y la base de prueba dedicada se eliminó después de la comprobación.
 
-La validación de GitHub Actions de la rama de 3B.2A permanece pendiente hasta
-su pull request; no debe documentarse como superada antes de esa ejecución.
+En el pull request #12 de 3B.2A, `Frontend`, `Backend quality` y
+`PostgreSQL integration` finalizaron correctamente. El adaptador V1 se
+contrastó con una copia anonimizada que conserva la estructura técnica del
+Excel real y el pull request fue fusionado en `main`; no queda validación
+remota ni funcional pendiente para 3B.2A.

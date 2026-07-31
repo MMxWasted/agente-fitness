@@ -14,11 +14,12 @@ El archivo contiene datos privados y OOXML es un contenedor ZIP con XML. No se
 puede confiar en su extensión, MIME, estructura interna, fórmulas ni tamaños
 declarados. Tampoco se debe ampliar `UserProfile` ni conservar el original.
 
-No se proporcionó el libro personal al repositorio. El formato V1 se define
+El libro personal no se conserva en el repositorio. El formato V1 se define
 contra el fixture sintético y anonimizado
-`backend/tests/fixtures/body_measurements/body_measurements_format_v1.xlsx`;
-deberá contrastarse con una copia anonimizada del formato real antes de aceptar
-variantes adicionales.
+`backend/tests/fixtures/body_measurements/body_measurements_format_v1.xlsx` y
+se contrastó con una copia anonimizada que conserva la estructura técnica del
+formato real. Cualquier variante adicional seguirá requiriendo contraste,
+versión, fixture y pruebas propias.
 
 ## Criterios de decisión
 
@@ -41,9 +42,10 @@ la petición. No persiste fuente, importación, revisión ni valor.
 el fingerprint normalizado con el mostrado. La previsualización no será una
 entrada confiable para persistir y no se conservará el Excel original.
 
-3B.2C queda reservado para consulta histórica, reversión y posibles
-integraciones. OneDrive, analítica e integración con entrenamientos no forman
-parte de 3B.2A.
+3B.2B queda reservado para confirmación, persistencia, consulta histórica,
+versionado y reversión de importaciones propias. 3B.2C cubrirá la analítica
+corporal determinista. OneDrive y la integración con entrenamientos no forman
+parte de 3B.2A ni de 3B.2B.
 
 ### Adaptador específico
 
@@ -168,15 +170,16 @@ errores documentados.
 El flujo es verificable, privado y extensible por versión, y el frontend no se
 acopla a posiciones de celda. A cambio, solo funciona con el formato V1 y una
 fecha sin año no puede resolverse en esta entrega. La confirmación,
-idempotencia persistente, versionado de revisiones, reversión y retención de
-datos normalizados siguen pendientes de 3B.2B/3B.2C.
+idempotencia persistente, versionado de revisiones, historial, reversión y
+retención de datos normalizados siguen pendientes de 3B.2B. La analítica
+corporal permanece pendiente de 3B.2C.
 
 ## Condiciones de revisión
 
-Revisar el ADR al contrastar un formato real anonimizado, aceptar una nueva
-plantilla, diseñar la persistencia, incorporar confirmación, sincronizar con
-OneDrive o cambiar límites de seguridad. Cada formato nuevo debe tener versión,
-fixture y pruebas propias.
+Revisar el ADR si un nuevo contraste anonimizado revela diferencias, al
+aceptar una nueva plantilla, diseñar la persistencia, incorporar confirmación,
+sincronizar con OneDrive o cambiar límites de seguridad. Cada formato nuevo
+debe tener versión, fixture y pruebas propias.
 
 ## Documentos relacionados
 
