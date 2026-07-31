@@ -5,7 +5,8 @@
 El bloque 2B.1 incorpora PostgreSQL local, conexión con SQLAlchemy 2 y
 migraciones Alembic. El bloque 3A.1 añade la primera entidad persistida:
 la identidad técnica `User`. El bloque 3A.2 añade `AuthSession` para renovar
-y revocar sesiones web, todavía sin perfil ni datos fitness.
+y revocar sesiones web. El bloque 3B.1 añade el perfil privado `UserProfile`
+sin incorporar otros dominios fitness.
 
 ## Decisiones de implementación
 
@@ -34,6 +35,12 @@ anterior y no crea datos semilla. La revisión `20260730_0003` crea
 actualización, expiración y revocación, índices por usuario y expiración, y
 eliminación en cascada al borrar la cuenta. También es reversible y no
 persiste el refresh token en claro.
+
+La revisión `20260730_0004` crea `user_profiles` con UUID, `user_id` único,
+nombre visible, fecha y altura opcionales, experiencia, zona horaria, unidades
+y timestamps. La FK usa `ON DELETE CASCADE`; las restricciones `CHECK` cierran
+altura, experiencia y unidades. La unicidad proporciona el índice necesario
+para consultar el único perfil del usuario sin duplicar otro índice.
 
 ## Contratos de diagnóstico
 
@@ -132,10 +139,15 @@ request #8 cubrieron la migración de `auth_sessions`, creación, rotación,
 rechazo del token anterior, revocación, caducidad, cuenta inactiva, eliminación
 en cascada y concurrencia de refresh. El pull request fue fusionado en `main`.
 
+En 3B.1, la validación local sobre PostgreSQL real cubrió la migración
+reversible de `user_profiles`, tipos, restricciones, relación uno a uno,
+persistencia, reemplazo idempotente, borrado en cascada, aislamiento entre
+usuarios y creación concurrente. La validación remota continúa pendiente.
+
 ## Límites actuales
 
 Solo existen los modelos, repositorios y servicios necesarios para identidad,
-autenticación y gestión de sesión. El frontend dispone de acceso autenticado
-mínimo, pero no existen perfil, entidades fitness, seeds ni Agente Fitness.
-Tampoco se define una topología de producción: esas decisiones pertenecen a
-bloques posteriores.
+autenticación, gestión de sesión y perfil básico. No existen objetivos,
+equipamiento, preferencias, limitaciones, historial corporal, otras entidades
+fitness, seeds ni Agente Fitness. Tampoco se define una topología de
+producción: esas decisiones pertenecen a bloques posteriores.

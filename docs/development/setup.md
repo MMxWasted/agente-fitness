@@ -2,11 +2,11 @@
 
 ## Alcance
 
-Esta guía cubre la fundación técnica y los bloques 3A.1 y 3A.2: frontend React con
-TypeScript, backend FastAPI, PostgreSQL local mediante Docker Compose, scripts
-PowerShell, identidad de usuario, autenticación bearer y sesión web renovable.
-Las únicas entidades persistidas son `User` y `AuthSession`; todavía no existen
-datos fitness.
+Esta guía cubre la fundación técnica y los bloques 3A.1, 3A.2 y 3B.1: frontend
+React con TypeScript, backend FastAPI, PostgreSQL local mediante Docker Compose,
+scripts PowerShell, identidad de usuario, autenticación bearer, sesión web
+renovable y perfil fitness básico. Las entidades persistidas son `User`,
+`AuthSession` y `UserProfile`.
 
 ## Requisitos
 
@@ -216,7 +216,8 @@ Set-Location ..
 
 La revisión inicial conserva la línea base técnica vacía. La revisión
 `20260730_0002` crea exclusivamente la tabla `users` y sus restricciones. La
-revisión `20260730_0003` añade `auth_sessions`, sin datos fitness ni semillas.
+revisión `20260730_0003` añade `auth_sessions`. La revisión `20260730_0004`
+crea `user_profiles` con relación uno a uno y sin datos semilla.
 
 ## Inicio manual del backend
 
@@ -246,6 +247,8 @@ npm.cmd run dev -- --host 127.0.0.1
 - Renovación: `POST http://localhost:8000/api/v1/auth/refresh`
 - Cierre de sesión: `POST http://localhost:8000/api/v1/auth/logout`
 - Usuario actual: `GET http://localhost:8000/api/v1/users/me`
+- Perfil propio: `GET http://localhost:8000/api/v1/profile`
+- Crear o reemplazar perfil: `PUT http://localhost:8000/api/v1/profile`
 - OpenAPI interactivo: `http://localhost:8000/docs`
 - Esquema OpenAPI: `http://localhost:8000/openapi.json`
 
@@ -415,5 +418,7 @@ remota de 3A.1 también finalizó correctamente en el pull request #6 mediante
 los jobs `Frontend`, `Backend quality` y `PostgreSQL integration`. La sesión
 web renovable de 3A.2 fue validada localmente y por esos mismos tres jobs en el
 pull request #8, ya fusionado en `main`; no queda validación remota pendiente
-para el bloque. Proveedores de identidad externos, perfil fitness y demás
-datos de negocio pertenecen a bloques posteriores.
+para el bloque. El perfil básico de 3B.1 está implementado y validado
+localmente; su validación remota continúa pendiente. Proveedores de identidad
+externos, objetivos, equipamiento, preferencias, limitaciones y demás datos de
+negocio pertenecen a bloques posteriores.

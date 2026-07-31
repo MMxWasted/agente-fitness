@@ -168,17 +168,20 @@ El MVP deberá proporcionar un flujo funcional completo desde la creación del p
 
 * Nombre visible.
 * Fecha de nacimiento opcional.
-* Altura.
+* Altura opcional.
 * Nivel de experiencia.
-* Objetivo principal.
-* Días disponibles.
-* Duración aproximada de las sesiones.
-* Equipamiento disponible.
-* Preferencias de entrenamiento.
-* Limitaciones.
-* Ejercicios excluidos.
 * Sistema de unidades.
 * Zona horaria.
+
+Objetivos, disponibilidad, duración, equipamiento, preferencias, limitaciones
+y ejercicios excluidos pertenecen a entidades o bloques separados y no forman
+parte de `UserProfile`.
+
+Peso, composición corporal, pliegues y perímetros tampoco forman parte de
+`UserProfile`. El bloque futuro independiente `3B.2 — Historial de mediciones
+corporales e importación desde Excel` los modelará mediante entidades
+históricas separadas y privadas, sin columnas JSON genéricas ni acoplamiento
+del perfil al formato de una hoja concreta.
 
 ### 4.3 Objetivos
 
@@ -256,24 +259,31 @@ El usuario podrá:
 
 ### 4.7 Peso y medidas corporales
 
-El usuario podrá registrar:
+El bloque 3B.2 deberá representar una sesión por revisión fechada. Cada sesión
+podrá contener valores normalizados por tipo de métrica, categoría, lado
+izquierdo, derecho o no aplicable y unidad. Entre las mediciones previstas
+están:
 
 * Peso.
-* Porcentaje de grasa opcional.
-* Cintura.
-* Pecho.
-* Brazo.
-* Cadera.
-* Muslo.
-* Notas.
+* Datos de bioimpedancia.
+* Pliegues de plicómetro.
+* Perímetros corporales.
+* Valores bilaterales cuando corresponda.
 
-La aplicación mostrará:
+La importación futura desde Excel deberá ser idempotente, detectar nuevas
+columnas de revisión y conservar procedencia y fecha sin asumir que el archivo
+es la fuente permanente ni acoplar el frontend a su estructura. La aplicación
+podrá mostrar posteriormente:
 
 * Evolución temporal.
 * Comparación entre fechas.
 * Media móvil del peso.
 * Cambios absolutos.
 * Cambios porcentuales cuando tengan sentido.
+
+La sincronización con OneDrive, el análisis histórico avanzado y la
+integración con entrenamientos se mantienen fuera de 3B.2 hasta sus bloques
+correspondientes.
 
 ### 4.8 Analítica básica
 
@@ -567,14 +577,34 @@ oportunista.
 * `birth_date`
 * `height_cm`
 * `experience_level`
-* `available_days`
-* `session_duration_minutes`
-* `training_preferences`
-* `limitations`
 * `timezone`
 * `unit_system`
 * `created_at`
 * `updated_at`
+
+Estado de 3B.1: `UserProfile` implementa exclusivamente estos campos. Fecha de
+nacimiento y altura son opcionales; experiencia, zona horaria y unidades son
+obligatorias y no se infieren. La propiedad procede del access token, la
+relación con `User` es uno a uno y usa borrado en cascada. Los módulos de
+objetivos, disponibilidad, preferencias, equipamiento y limitaciones continúan
+separados y pendientes.
+
+### 9.2.1 BodyMeasurementReview y BodyMeasurementValue
+
+Diseño futuro del bloque 3B.2, todavía no implementado:
+
+* `BodyMeasurementReview` representará una revisión fechada y conservará su
+  propietario y procedencia.
+* `BodyMeasurementValue` representará cada observación normalizada por tipo de
+  métrica, categoría, lado y unidad.
+* Las entidades tendrán dimensión temporal propia y estarán separadas de
+  `UserProfile`; no serán columnas adicionales ni un documento JSON genérico.
+* La propiedad privada se relacionará con `User` o `UserProfile`, pero siempre
+  se resolverá desde el usuario autenticado.
+* Una clave de procedencia estable deberá permitir importación idempotente y
+  detección de nuevas revisiones sin duplicar las existentes.
+* No se define todavía un esquema definitivo, importador, sincronización,
+  analítica ni integración con OneDrive.
 
 ### 9.3 UserEquipment
 
@@ -1244,9 +1274,12 @@ Resultado esperado:
 * Pruebas de autorización.
 
 Estado operativo: 3A.1 implementa identidad y access token; 3A.2 implementa la
-gestión de sesión web, renovación, revocación e interfaz mínima. Perfil,
-objetivos, equipamiento, preferencias, limitaciones y autorización por
-propietario continúan pendientes.
+gestión de sesión web, renovación, revocación e interfaz mínima; 3B.1
+implementa el perfil fitness básico privado. Objetivos, equipamiento,
+preferencias, limitaciones y autorización general por propietario continúan
+pendientes. El bloque futuro 3B.2 gestionará el historial privado de mediciones
+corporales y su importación idempotente desde Excel mediante entidades
+separadas; no amplía `UserProfile` ni está implementado en 3B.1.
 
 ### Fase 4 — Catálogo de ejercicios
 
@@ -1298,7 +1331,7 @@ Resultado esperado:
 
 Resultado esperado:
 
-* Registro corporal.
+* Consumo del historial corporal de 3B.2.
 * Media móvil.
 * Comparaciones.
 * Volumen semanal.

@@ -84,8 +84,18 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
   - [x] Implementar gestión de sesión (bloque 3A.2 implementado, validado y
     fusionado; `Frontend`, `Backend quality` y `PostgreSQL integration`
     finalizaron correctamente en el pull request #8).
-  - [ ] Implementar perfil fitness.
+  - [x] Implementar perfil fitness (bloque 3B.1 implementado y validado
+    localmente; validación remota pendiente).
+  - [ ] 3B.2 — Historial de mediciones corporales e importación desde Excel.
   - [ ] Implementar validación y autorización por propietario.
+
+El bloque 3B.2 será un módulo futuro independiente y privado. Usará entidades
+históricas con dimensión temporal, separadas de `user_profiles` y relacionadas
+con su propietario a través de `users` o del perfil, con una sesión por
+revisión y valores normalizados por métrica, categoría, lado y unidad. Su
+diseño deberá cubrir procedencia y fecha, importación idempotente y detección
+de columnas nuevas. El análisis histórico, la integración con entrenamientos
+y una posible sincronización con OneDrive permanecen en etapas posteriores.
 
 ## Fase 4. Catálogo de ejercicios
 
@@ -129,13 +139,15 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
 ## Fase 7. Peso, medidas y analítica
 
 - Estado: [ ] Pendiente
-- Objetivo: capturar peso, medidas corporales y métricas objetivas deterministas.
-- Entregables: mediciones, tendencia de peso, adherencia, volumen y métricas básicas.
-- Dependencias: fase 6.
+- Objetivo: calcular y presentar métricas objetivas deterministas, incluido el
+  historial corporal procedente de 3B.2.
+- Entregables: tendencia de peso, comparaciones corporales, adherencia, volumen
+  y métricas básicas.
+- Dependencias: fase 6 y bloque 3B.2.
 - Criterios de finalización: el sistema puede mostrar métricas básicas con una definición clara y datos conocidos.
 - Tareas:
   - [ ] Definir las métricas deterministas iniciales.
-  - [ ] Implementar registro de peso y medidas.
+  - [ ] Integrar el historial corporal de 3B.2 en cálculos y visualizaciones.
   - [ ] Implementar cálculos básicos de seguimiento.
   - [ ] Implementar pruebas sobre datos de ejemplo.
 

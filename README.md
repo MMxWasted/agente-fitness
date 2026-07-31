@@ -11,12 +11,14 @@ identidad, autenticación backend y gestión de sesión web: registro por correo
 contraseña protegida con Argon2id, access tokens JWT, refresh opaco rotatorio,
 logout con revocación y consulta de la cuenta actual. El frontend React ofrece
 un formulario mínimo de login, restaura la sesión y conserva el access token
-solo en memoria.
+solo en memoria. El bloque 3B.1 añade un perfil fitness básico privado,
+consultable y editable, con nombre visible, contexto físico mínimo, experiencia,
+zona horaria y sistema de unidades.
 
 La integración continua mantiene tres jobs independientes y ejecuta pruebas
-reales de autenticación y sesiones contra un PostgreSQL efímero. Los scripts
-PowerShell preparan, inician, comprueban y detienen el entorno local sin
-Dockerizar frontend ni backend; su recorrido completo con Docker ya fue
+reales de autenticación, sesiones y perfil contra un PostgreSQL efímero. Los
+scripts PowerShell preparan, inician, comprueban y detienen el entorno local
+sin Dockerizar frontend ni backend; su recorrido completo con Docker ya fue
 validado.
 
 ## Inicio rápido
@@ -92,9 +94,10 @@ Construir una base sólida para un producto de seguimiento fitness, analítica d
 
 ## Aviso importante
 
-La aplicación disponible incorpora la cuenta técnica, autenticación backend y
-una interfaz mínima de login y sesión. No existe todavía interfaz de registro,
-perfil fitness, rutinas, entrenamientos, métricas ni Agente Fitness. Docker
+La aplicación disponible incorpora la cuenta técnica, autenticación backend,
+una interfaz mínima de login y sesión y el perfil fitness básico. No existe
+todavía interfaz de registro, objetivos, equipamiento, preferencias,
+limitaciones, rutinas, entrenamientos, métricas ni Agente Fitness. Docker
 Compose administra únicamente PostgreSQL local; no existe contenedorización
 completa ni despliegue de producción. Los scripts locales ejecutan FastAPI y
 Vite como procesos del host registrados de forma explícita.

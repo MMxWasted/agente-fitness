@@ -5,9 +5,9 @@
 Este documento describe la arquitectura prevista para Agente Fitness. La
 fundación técnica ya materializa frontend, backend y persistencia local; el
 bloque 3A.1 añade identidad y autenticación backend, y 3A.2 incorpora gestión
-de sesión renovable e interfaz mínima de login. Las capas fitness y las
-decisiones futuras continúan siendo conceptuales y deberán respaldarse con ADR
-cuando corresponda.
+de sesión renovable e interfaz mínima de login. El bloque 3B.1 materializa el
+perfil fitness básico privado; las demás capas fitness y decisiones futuras
+continúan siendo conceptuales y deberán respaldarse con ADR cuando corresponda.
 
 ## Objetivos arquitectónicos
 
@@ -51,10 +51,12 @@ flowchart LR
 - Frontend: propuesta de interfaz web orientada a una experiencia mobile-first.
 - Backend: propuesta de API con rutas, esquemas, servicios de dominio, repositorios y lógica de control.
 - Persistencia: PostgreSQL local con una base técnica síncrona de SQLAlchemy 2,
-  Psycopg 3 y Alembic; están materializadas la cuenta técnica `User` y
-  `AuthSession`.
+  Psycopg 3 y Alembic; están materializadas `User`, `AuthSession` y
+  `UserProfile`.
 - Autenticación: correo y contraseña Argon2id con access token JWT bearer,
   junto con sesión web renovable según ADR-005 y ADR-013.
+- Perfil: recurso privado uno a uno, servido mediante rutas, servicio y
+  repositorio separados y propiedad derivada del usuario autenticado.
 - Analítica determinista: servicios independientes de cálculo de métricas.
 - Motor determinista de rutinas: lógica explícita para generar borradores de rutina.
 - Agente Fitness: un único agente orquestador con herramientas limitadas.

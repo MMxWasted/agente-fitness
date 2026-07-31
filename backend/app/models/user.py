@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, DateTime, String, UniqueConstraint, func, true
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
@@ -37,6 +37,14 @@ class User(Base):
         onupdate=utc_now,
         server_default=func.now(),
     )
+    profile: Mapped["UserProfile | None"] = relationship(
+        back_populates="user",
+        uselist=False,
+        passive_deletes=True,
+    )
 
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, is_active={self.is_active!r})"
+
+
+from app.models.user_profile import UserProfile  # noqa: E402

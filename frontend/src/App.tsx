@@ -4,6 +4,7 @@ import type { ApiStatus } from './app/api-status'
 import { ApiStatusCard } from './components/ApiStatusCard'
 import { LoginForm } from './features/auth/LoginForm'
 import { useAuthentication } from './features/auth/use-authentication'
+import { ProfileSection } from './features/profile/ProfileSection'
 import { checkApiHealth } from './services/health'
 
 function App() {
@@ -98,11 +99,16 @@ function App() {
               </div>
             )}
         </section>
+
+        {authentication.status === 'authenticated' && (
+          <ProfileSection />
+        )}
       </div>
 
       <p className="scope-note">
         El access token se conserva solo en memoria; la cookie de renovación
-        no es accesible desde JavaScript.
+        no es accesible desde JavaScript. El perfil es privado y se consulta
+        mediante el access token.
       </p>
     </main>
   )

@@ -56,6 +56,8 @@ absoluta.
 | `POST /api/v1/auth/refresh` | Cookie de refresh y `Origin` confiable | 200 con access token y cookie rotada | 401 sesión inválida; 403 origen ausente o no confiable |
 | `POST /api/v1/auth/logout` | Cookie opcional y `Origin` confiable | 204, revocación y eliminación de cookie | 403 origen ausente o no confiable |
 | `GET /api/v1/users/me` | `Authorization: Bearer <token>` | 200 y usuario público | 401 token o identidad inválidos; 403 cuenta inactiva |
+| `GET /api/v1/profile` | Access token bearer | 200 y perfil propio | 401 token inválido; 403 cuenta inactiva; 404 perfil no creado |
+| `PUT /api/v1/profile` | Access token bearer y perfil completo sin identificadores internos | 200 y perfil creado o reemplazado | 401 token inválido; 403 cuenta inactiva; 422 entrada inválida |
 
 El usuario público contiene `id`, `email`, `is_active`, `created_at` y
 `updated_at`. Ningún contrato expone la contraseña ni `password_hash`. El
@@ -77,6 +79,12 @@ navegador.
 
 Recuperación, verificación de correo, MFA, login social y gestión visual de
 dispositivos no están implementados.
+
+`PUT /profile` es un reemplazo completo e idempotente. `display_name`,
+`experience_level`, `timezone` y `unit_system` son obligatorios. `birth_date`
+y `height_cm` son opcionales: omitirlos o enviarlos como `null` elimina su
+valor anterior. La respuesta no expone `user_id`; la propiedad se obtiene
+exclusivamente del sujeto del access token.
 
 ## Autorización
 
@@ -151,7 +159,6 @@ La API debe evitar filtrar información innecesaria y debe respetar las reglas d
 
 ## Ejemplos conceptuales de rutas
 
-- GET /api/v1/profile
 - GET /api/v1/goals/active
 - POST /api/v1/routines
 - GET /api/v1/routines/{routine_id}

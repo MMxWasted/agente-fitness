@@ -50,6 +50,14 @@
   configuración de cookie validada por entorno.
 - Migración reversible de `auth_sessions` y cobertura unitaria, frontend y de
   integración PostgreSQL, incluida la renovación concurrente.
+- Perfil fitness básico privado con relación uno a uno por usuario, campos
+  mínimos validados y migración reversible de `user_profiles`.
+- Contratos bearer `GET /api/v1/profile` y `PUT /api/v1/profile`, con propiedad
+  derivada exclusivamente del usuario autenticado.
+- Interfaz React accesible y mobile-first para crear, consultar y editar el
+  perfil, incluida la presentación de altura en unidades métricas o imperiales.
+- Cobertura unitaria, API, frontend y PostgreSQL para validación, idempotencia,
+  concurrencia y aislamiento entre propietarios del perfil.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.

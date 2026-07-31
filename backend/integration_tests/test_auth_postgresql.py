@@ -111,7 +111,7 @@ def test_authentication_migrations_are_at_head_with_real_constraints() -> None:
 
     with get_engine().connect() as connection:
         revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-    assert revision == "20260730_0003"
+    assert revision == "20260730_0004"
 
 
 def test_registration_login_and_current_user_flow(

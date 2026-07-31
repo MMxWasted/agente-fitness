@@ -61,9 +61,25 @@ operaciones basadas en cookie exigen un origen confiable, además de
 sesiones caducadas se eliminan oportunistamente y una sesión no sobrevive a la
 eliminación futura de su cuenta.
 
+El perfil básico recoge únicamente nombre visible, fecha de nacimiento y
+altura opcionales, nivel de experiencia declarado, zona horaria y sistema de
+unidades. No incorpora objetivos, historial corporal, lesiones, limitaciones,
+equipamiento, nutrición ni campos libres. Su `user_id` se deriva del access
+token, nunca se acepta desde el cliente y no se expone en la respuesta. La
+eliminación de la cuenta elimina el perfil por cascada.
+
 ## Logs
 
 Los logs técnicos deben evitar incluir datos sensibles o completos de prompts, herramientas y respuestas salvo justificación explícita. La trazabilidad debe equilibrarse con la minimización de datos. Las trazas técnicas deben utilizar resúmenes, identificadores y códigos de error cuando sea suficiente.
+
+Los payloads completos del perfil, la fecha de nacimiento y la altura no deben
+registrarse en logs ordinarios.
+
+Las revisiones corporales futuras serán datos privados separados del perfil.
+Bioimpedancia, pliegues, perímetros, valores bilaterales, archivos de origen y
+resultados de importación no deberán aparecer en logs ordinarios. Una eventual
+integración con Excel u OneDrive deberá aplicar minimización, autorización por
+propietario y registro técnico sin valores corporales.
 
 ## Prompts y conversaciones
 
@@ -103,8 +119,8 @@ No deben almacenarse secretos en Git, en texto plano en el repositorio ni en fro
 
 Los datos de desarrollo, demostración y pruebas deben separarse de los datos
 reales para evitar mezclas y exposición accidental. Las pruebas de integración
-de autenticación rechazan bases cuyo nombre no termine en `_test` o `_ci` y
-eliminan exclusivamente las cuentas y sesiones que crean.
+de autenticación y perfil rechazan bases cuyo nombre no termine en `_test` o
+`_ci` y eliminan exclusivamente las cuentas y datos asociados que crean.
 
 ## Incidentes
 
