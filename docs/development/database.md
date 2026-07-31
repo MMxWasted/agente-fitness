@@ -142,7 +142,10 @@ en cascada y concurrencia de refresh. El pull request fue fusionado en `main`.
 En 3B.1, la validación local sobre PostgreSQL real cubrió la migración
 reversible de `user_profiles`, tipos, restricciones, relación uno a uno,
 persistencia, reemplazo idempotente, borrado en cascada, aislamiento entre
-usuarios y creación concurrente. La validación remota continúa pendiente.
+usuarios y creación concurrente. El job `PostgreSQL integration` volvió a
+validar la migración y la suite real de perfiles en el pull request #10; los
+tres jobs finalizaron correctamente y el pull request fue fusionado en
+`main`.
 
 ## Límites actuales
 
