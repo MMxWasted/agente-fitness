@@ -13,7 +13,9 @@ logout con revocación y consulta de la cuenta actual. El frontend React ofrece
 un formulario mínimo de login, restaura la sesión y conserva el access token
 solo en memoria. El bloque 3B.1 añade un perfil fitness básico privado,
 consultable y editable, con nombre visible, contexto físico mínimo, experiencia,
-zona horaria y sistema de unidades.
+zona horaria y sistema de unidades. El bloque 3B.2A incorpora la carga
+autenticada y previsualización segura de un formato XLSX conocido de revisiones
+corporales, sin persistir el archivo ni sus valores.
 
 La integración continua mantiene tres jobs independientes y ejecuta pruebas
 reales de autenticación, sesiones y perfil contra un PostgreSQL efímero. Los
@@ -95,9 +97,11 @@ Construir una base sólida para un producto de seguimiento fitness, analítica d
 ## Aviso importante
 
 La aplicación disponible incorpora la cuenta técnica, autenticación backend,
-una interfaz mínima de login y sesión y el perfil fitness básico. No existe
-todavía interfaz de registro, objetivos, equipamiento, preferencias,
-limitaciones, rutinas, entrenamientos, métricas ni Agente Fitness. Docker
-Compose administra únicamente PostgreSQL local; no existe contenedorización
-completa ni despliegue de producción. Los scripts locales ejecutan FastAPI y
-Vite como procesos del host registrados de forma explícita.
+una interfaz mínima de login y sesión, el perfil fitness básico y una
+previsualización sin retención de mediciones desde XLSX. No existe todavía
+interfaz de registro, confirmación o historial persistente de mediciones,
+objetivos, equipamiento, preferencias, limitaciones, rutinas, entrenamientos,
+analítica ni Agente Fitness. Docker Compose administra únicamente PostgreSQL
+local; no existe contenedorización completa ni despliegue de producción. Los
+scripts locales ejecutan FastAPI y Vite como procesos del host registrados de
+forma explícita.

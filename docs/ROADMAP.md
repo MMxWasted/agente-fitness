@@ -87,16 +87,22 @@ Este roadmap es una referencia viva para la ejecución del proyecto. Su propósi
   - [x] Implementar perfil fitness (bloque 3B.1 implementado, validado y
     fusionado; `Frontend`, `Backend quality` y `PostgreSQL integration`
     finalizaron correctamente en el pull request #10).
-  - [ ] 3B.2 — Historial de mediciones corporales e importación desde Excel.
+  - [~] 3B.2 — Historial de mediciones corporales e importación desde Excel.
+    - [x] 3B.2A — Lectura segura y previsualización de mediciones desde Excel
+      (implementado y validado localmente; sin persistencia).
+    - [ ] 3B.2B — Confirmación idempotente y persistencia de revisiones y
+      valores normalizados.
+    - [ ] 3B.2C — Historial, reversión e integraciones de mediciones.
   - [ ] Implementar validación y autorización por propietario.
 
-El bloque 3B.2 será un módulo futuro independiente y privado. Usará entidades
-históricas con dimensión temporal, separadas de `user_profiles` y relacionadas
-con su propietario a través de `users` o del perfil, con una sesión por
-revisión y valores normalizados por métrica, categoría, lado y unidad. Su
-diseño deberá cubrir procedencia y fecha, importación idempotente y detección
-de columnas nuevas. El análisis histórico, la integración con entrenamientos
-y una posible sincronización con OneDrive permanecen en etapas posteriores.
+3B.2A ofrece una previsualización autenticada con adaptador XLSX versionado,
+catálogo de métricas y controles ZIP/XML, pero descarta el archivo y no crea
+tablas. 3B.2B usará entidades históricas privadas, separadas de
+`user_profiles`, con una sesión por revisión y valores normalizados por
+métrica, categoría, lado y unidad; deberá confirmar reanalizando el archivo,
+preservar procedencia, evitar duplicados y detectar revisiones nuevas. El
+historial, la reversión, el análisis, la integración con entrenamientos y una
+posible sincronización con OneDrive permanecen pendientes.
 
 ## Fase 4. Catálogo de ejercicios
 

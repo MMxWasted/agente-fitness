@@ -102,6 +102,14 @@
   box-shadow: 0 1rem 3rem rgba(15, 23, 42, 0.08);
 }
 
+.measurements-card {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 1rem 3rem rgba(15, 23, 42, 0.08);
+}
+
 .auth-card__eyebrow,
 .session-summary__label {
   margin: 0 0 0.2rem;
@@ -113,10 +121,98 @@
 }
 
 .auth-card h2,
-.profile-card h2 {
+.profile-card h2,
+.measurements-card h2 {
   margin: 0;
   color: var(--text);
   font-size: 1.35rem;
+}
+
+.measurement-upload {
+  display: grid;
+  gap: 1rem;
+}
+
+.measurement-preview {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.measurement-preview h3,
+.measurement-preview h4 {
+  margin: 0;
+  color: var(--text);
+}
+
+.preview-summary,
+.revision-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  background: #f8fafc;
+}
+
+.preview-summary--blocked {
+  border-color: var(--status-unavailable);
+  background: var(--status-unavailable-soft);
+}
+
+.preview-summary p {
+  margin: 0.6rem 0 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.preview-issues {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+  color: var(--text-muted);
+}
+
+.preview-issues--errors {
+  color: var(--status-unavailable);
+}
+
+.revision-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.metric-group {
+  margin-top: 1rem;
+}
+
+.metric-group h4 {
+  font-size: 0.95rem;
+}
+
+.metric-list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0.6rem 0 0;
+}
+
+.metric-list__item {
+  display: grid;
+  gap: 0.15rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.metric-list__item:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.metric-list dt {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.metric-list dd {
+  margin: 0;
+  color: var(--text-muted);
 }
 
 .auth-card__description {
@@ -310,6 +406,11 @@ button:disabled {
   }
 
   .profile-card {
+    grid-column: 1 / -1;
+    padding: 1.5rem;
+  }
+
+  .measurements-card {
     grid-column: 1 / -1;
     padding: 1.5rem;
   }

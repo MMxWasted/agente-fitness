@@ -34,6 +34,21 @@ class Settings(BaseSettings):
         "@localhost:5432/agente_fitness"
     )
     database_connect_timeout_seconds: int = Field(default=3, ge=1, le=30)
+    body_measurement_upload_max_bytes: int = Field(
+        default=5 * 1024 * 1024,
+        ge=1024,
+        le=25 * 1024 * 1024,
+    )
+    body_measurement_zip_max_entries: int = Field(
+        default=512,
+        ge=16,
+        le=4096,
+    )
+    body_measurement_zip_max_uncompressed_bytes: int = Field(
+        default=25 * 1024 * 1024,
+        ge=1024,
+        le=100 * 1024 * 1024,
+    )
     jwt_secret_key: SecretStr = Field()
     jwt_algorithm: Literal["HS256"] = "HS256"
     access_token_expire_minutes: int = Field(default=30, ge=5, le=1440)

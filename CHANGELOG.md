@@ -58,6 +58,19 @@
   perfil, incluida la presentación de altura en unidades métricas o imperiales.
 - Cobertura unitaria, API, frontend y PostgreSQL para validación, idempotencia,
   concurrencia y aislamiento entre propietarios del perfil.
+- Endpoint bearer `POST /api/v1/body-measurement-imports/preview` para validar
+  y previsualizar sin persistencia un formato XLSX conocido de revisiones.
+- Adaptador `body-measurements-v1`, catálogo normalizado de bioimpedancia,
+  pliegues y perímetros, resolución explícita de lateralidad, unidades, fechas
+  y decimales, y fingerprint determinista para una confirmación futura.
+- Límites de tamaño y contenedor, validación ZIP/OOXML, rechazo de macros,
+  cifrado, protección, fórmulas corporales y XML peligroso, y descarte del
+  archivo original al finalizar la petición.
+- Interfaz React accesible para seleccionar, analizar, reintentar y revisar
+  métricas, advertencias, errores bloqueantes y elementos desconocidos sin
+  guardar el `File` en almacenamiento web.
+- Fixture XLSX sintético anonimizado, ADR-014 y cobertura de backend, API y
+  frontend para la previsualización segura del bloque 3B.2A.
 - Visión de producto ampliada para el MVP inicial de Agente Fitness.
 - Alcance del producto reestructurado con clasificación MoSCoW y criterios de éxito.
 - Historias de usuario completas y verificables para las épicas principales del producto.

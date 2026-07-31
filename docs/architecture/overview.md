@@ -6,8 +6,10 @@ Este documento describe la arquitectura prevista para Agente Fitness. La
 fundación técnica ya materializa frontend, backend y persistencia local; el
 bloque 3A.1 añade identidad y autenticación backend, y 3A.2 incorpora gestión
 de sesión renovable e interfaz mínima de login. El bloque 3B.1 materializa el
-perfil fitness básico privado; las demás capas fitness y decisiones futuras
-continúan siendo conceptuales y deberán respaldarse con ADR cuando corresponda.
+perfil fitness básico privado. 3B.2A añade un flujo autenticado de lectura y
+previsualización XLSX sin persistencia; las demás capas fitness y decisiones
+futuras continúan siendo conceptuales y deberán respaldarse con ADR cuando
+corresponda.
 
 ## Objetivos arquitectónicos
 
@@ -57,6 +59,9 @@ flowchart LR
   junto con sesión web renovable según ADR-005 y ADR-013.
 - Perfil: recurso privado uno a uno, servido mediante rutas, servicio y
   repositorio separados y propiedad derivada del usuario autenticado.
+- Importación corporal: adaptador XLSX V1 y catálogo normalizado que validan y
+  previsualizan en memoria; no existen todavía modelos ni repositorios de
+  mediciones.
 - Analítica determinista: servicios independientes de cálculo de métricas.
 - Motor determinista de rutinas: lógica explícita para generar borradores de rutina.
 - Agente Fitness: un único agente orquestador con herramientas limitadas.

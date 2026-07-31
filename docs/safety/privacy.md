@@ -75,11 +75,21 @@ Los logs técnicos deben evitar incluir datos sensibles o completos de prompts, 
 Los payloads completos del perfil, la fecha de nacimiento y la altura no deben
 registrarse en logs ordinarios.
 
-Las revisiones corporales futuras serán datos privados separados del perfil.
+Las revisiones corporales son datos privados separados del perfil.
 Bioimpedancia, pliegues, perímetros, valores bilaterales, archivos de origen y
-resultados de importación no deberán aparecer en logs ordinarios. Una eventual
-integración con Excel u OneDrive deberá aplicar minimización, autorización por
-propietario y registro técnico sin valores corporales.
+resultados de importación no deberán aparecer en logs ordinarios.
+
+En 3B.2A el usuario autenticado puede enviar manualmente un `.xlsx` conocido
+para previsualizarlo. El backend lo procesa durante la petición, cierra el
+recurso en `finally` y no conserva el original, la previsualización ni valores
+en PostgreSQL o almacenamiento permanente. La respuesta no incluye nombres
+personales encontrados, nombre físico del archivo, celdas arbitrarias,
+`user_id`, tokens ni rutas temporales. El frontend conserva el `File` solo en
+memoria React y no lo escribe en Web Storage, IndexedDB o cookies.
+
+La futura confirmación volverá a analizar el archivo; una integración con
+OneDrive deberá aplicar minimización, autorización por propietario y registro
+técnico sin valores corporales.
 
 ## Prompts y conversaciones
 

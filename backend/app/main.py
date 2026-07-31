@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.auth import router as auth_router
+from app.api.routes.body_measurement_imports import (
+    router as body_measurement_imports_router,
+)
 from app.api.routes.health import router as health_router
 from app.api.routes.profile import router as profile_router
 from app.api.routes.readiness import router as readiness_router
@@ -23,3 +26,4 @@ app.include_router(readiness_router)
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(profile_router)
+app.include_router(body_measurement_imports_router)

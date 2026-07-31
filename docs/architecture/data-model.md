@@ -228,7 +228,8 @@ caducadas se limpian de forma oportunista al crear o renovar sesiones.
 
 ### BodyMeasurementReview y BodyMeasurementValue
 
-- Estado: diseño futuro del bloque 3B.2; no existen tablas ni contratos.
+- Estado: 3B.2A implementa el contrato de previsualización en memoria; no
+  existen tablas. La persistencia continúa pendiente de 3B.2B.
 - Propósito: representar una revisión corporal fechada y sus observaciones
   normalizadas sin ampliar `UserProfile`.
 - Campos conceptuales de la revisión: propietario, fecha de la revisión,
@@ -241,9 +242,10 @@ caducadas se limpian de forma oportunista al crear o renovar sesiones.
   autenticado; ningún usuario puede consultar revisiones ajenas.
 - Restricciones relevantes: una sesión por revisión, fechas válidas,
   normalización explícita y ausencia de documentos JSON genéricos.
-- Importación futura: detectará columnas nuevas del Excel, evitará duplicados
-  y conservará la procedencia sin acoplar la API o la interfaz al formato del
-  archivo.
+- Importación: 3B.2A reconoce un formato V1 con catálogo normalizado y calcula
+  un fingerprint sin conservar el original. 3B.2B deberá reanalizar durante la
+  confirmación, detectar columnas nuevas, evitar duplicados y conservar la
+  procedencia sin acoplar la API o la interfaz al formato del archivo.
 - Evolución posterior: análisis histórico, relación con entrenamientos y
   posible sincronización con OneDrive.
 
